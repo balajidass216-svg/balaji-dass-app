@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Game Result Admin</title>
+
+
+  <!-- ================= SUPABASE LIBRARY ================= -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f4f5f7;
+      color: #222;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    h1 {
+      margin: 0 0 20px;
+      font-size: 26px;
+    }
+
+    .box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .box-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid #ccc;
+      border-radius: 7px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #333;
+    }
+
+    button {
+      border: 0;
+      border-radius: 7px;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .add-btn {
+      background: #111;
+      color: white;
+      margin-top: 15px;
+    }
+
+    .update-btn {
+      background: #198754;
+      color: white;
+    }
+
+    .delete-btn {
+      background: #dc3545;
+      color: white;
+    }
+
+    .reload-btn {
+      background: #444;
+      color: white;
+      margin-left: 8px;
+    }
+
+    .message {
+      display: none;
+      padding: 11px;
+      border-radius: 7px;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+
+    .success {
+      display: block;
+      background: #d1e7dd;
+      color: #0f5132;
+    }
+
+    .error {
+      display: block;
+      background: #f8d7da;
+      color: #842029;
+    }
+
+    .market {
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+      background: #fff;
+    }
+
+    .market-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .market-id {
+      font-size: 13px;
+      color: #777;
+    }
+
+    .market-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .kal-box {
+      background: #f1f1f1;
+      padding: 11px;
+      border-radius: 7px;
+      min-height: 42px;
+      font-weight: bold;
+    }
+
+    .buttons {
+      margin-top: 15px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 30px;
+      color: #777;
+    }
+
+    @media (max-width: 800px) {
+
+      body {
+        padding: 10px;
+      }
+
+      .form-grid,
+      .market-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .market-header {
+        align-items: flex-start;
+        gap: 10px;
+        flex-direction: column;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+  <h1>Game Result Admin</h1>
+
+
+  <div id="message" class="message"></div>
+
+
+  <!-- ================= NEW MARKET ================= -->
+
+  <div class="box">
+
+    <div class="box-title">
+      New Market
+    </div>
+
+
+    <div class="form-grid">
+
+
+      <div class="field">
+
+        <label>Market Name</label>
+
+        <input
+          type="text"
+          id="newName"
+          placeholder="Market name"
+        >
+
+      </div>
+
+
+      <div class="field">
+
+        <label>Open Time</label>
+
+        <input
+          type="time"
+          id="newOpen"
+        >
+
+      </div>
+
+
+      <div class="field">
+
+        <label>Close Time</label>
+
+        <input
+          type="time"
+          id="newClose"
+        >
+
+      </div>
+
+
+      <div class="field">
+
+        <label>Close2 Time</label>
+
+        <input
+          type="time"
+          id="newClose2"
+        >
+
+      </div>
+
+
+      <div class="field">
+
+        <label>Date</label>
+
+        <input
+          type="date"
+          id="newDate"
+        >
+
+      </div>
+
+
+    </div>
+
+
+    <button
+      class="add-btn"
+      onclick="addMarket()"
+    >
+      + Add Market
+    </button>
+
+
+  </div>
+
+
+  <!-- ================= MARKET LIST ================= -->
+
+  <div class="box">
+
+    <div class="box-title">
+
+      Existing Markets
+
+      <button
+        class="reload-btn"
+        onclick="loadMarkets()"
+      >
+        Refresh
+      </button>
+
+    </div>
+
+
+    <div id="markets">
+      Loading...
+    </div>
+
+
+  </div>
+
+
+</div>
+
+
+
+<script>
+
+/* =========================================================
+   DIRECT SUPABASE CONNECTION
+   ========================================================= */
+
+/*
+   Yahan supabase.js ki zaroorat nahi hai.
+   Direct isi page se Supabase connect hoga.
+*/
+
+const SUPABASE_URL =
+  "https://glhomrlwnwhevunfubog.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB";
+
+
+const db =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+
+/* =========================================================
+   CHECK CONNECTION
+   ========================================================= */
+
+if (!db) {
+
+  showMessage(
+    "Supabase connection nahi bana.",
+    "error"
+  );
+
+}
+
+
+/* =========================================================
+   INDIA DATE
+   ========================================================= */
+
+function getIndiaToday() {
+
+  const formatter =
+    new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone: "Asia/Kolkata",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }
+    );
+
+  return formatter.format(new Date());
+
+}
+
+
+/* =========================================================
+   HTML ESCAPE
+   ========================================================= */
+
+function escapeHtml(value) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+
+    return "";
+
+  }
+
+  return String(value)
+
+    .replace(/&/g, "&amp;")
+
+    .replace(/</g, "&lt;")
+
+    .replace(/>/g, "&gt;")
+
+    .replace(/"/g, "&quot;")
+
+    .replace(/'/g, "&#039;");
+
+}
+
+
+/* =========================================================
+   TIME VALUE
+   ========================================================= */
+
+function timeValue(value) {
+
+  if (!value) {
+
+    return "";
+
+  }
+
+  return String(value).substring(0, 5);
+
+}
+
+
+/* =========================================================
+   MESSAGE
+   ========================================================= */
+
+function showMessage(
+  text,
+  type = "success"
+) {
+
+  const box =
+    document.getElementById("message");
+
+  box.textContent = text;
+
+  box.className =
+    "message " + type;
+
+
+  setTimeout(() => {
+
+    box.className = "message";
+
+  }, 4000);
+
+}
+
+
+/* =========================================================
+   INITIAL DATE
+   ========================================================= */
+
+document.getElementById("newDate").value =
+  getIndiaToday();
+
+
+/* =========================================================
+   DAILY RESULT ROLL
+   ========================================================= */
+
+async function rollMarketIfNeeded(market) {
+
+  const today =
+    getIndiaToday();
+
+
+  /* ================= DATE NULL ================= */
+
+  if (!market.date) {
+
+    const { error } =
+      await db
+
+        .from("Game result")
+
+        .update({
+          date: today
+        })
+
+        .eq("id", market.id);
+
+
+    if (error) {
+
+      console.error(
+        "Date update error:",
+        error
+      );
+
+    }
+
+
+    return;
+
+  }
+
+
+  /* ================= ALREADY TODAY ================= */
+
+  if (market.date === today) {
+
+    return;
+
+  }
+
+
+  /* ================= OLD RESULT ================= */
+
+  const oldNumber =
+    market.number;
+
+
+  let newKal =
+    market.kal;
+
+
+  /*
+    Agar purana number actual result hai
+    to Kal Ka Result mein save hoga.
+
+    Agar ** hai to Kal mein nahi jayega.
+  */
+
+  if (
+    oldNumber &&
+    oldNumber !== "**"
+  ) {
+
+    newKal =
+      oldNumber;
+
+  }
+
+
+  /* ================= UPDATE ================= */
+
+  const { error } =
+    await db
+
+      .from("Game result")
+
+      .update({
+
+        number: "**",
+
+        kal: newKal,
+
+        date: today
+
+      })
+
+      .eq("id", market.id);
+
+
+  if (error) {
+
+    console.error(
+      "Daily result roll error:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   CHECK ALL MARKETS
+   ========================================================= */
+
+async function checkDailyRoll() {
+
+  const { data, error } =
+    await db
+
+      .from("Game result")
+
+      .select("*")
+
+      .order("id", {
+        ascending: true
+      });
+
+
+  if (error) {
+
+    console.error(error);
+
+    showMessage(
+      "Game result load nahi hua: " +
+      error.message,
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  if (!data) {
+
+    return;
+
+  }
+
+
+  for (
+    const market of data
+  ) {
+
+    await rollMarketIfNeeded(
+      market
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   LOAD MARKETS
+   ========================================================= */
+
+async function loadMarkets() {
+
+  const container =
+    document.getElementById("markets");
+
+
+  container.innerHTML =
+    "Loading...";
+
+
+  /* Daily result check */
+
+  await checkDailyRoll();
+
+
+  /* Latest data */
+
+  const { data, error } =
+    await db
+
+      .from("Game result")
+
+      .select("*")
+
+      .order("id", {
+        ascending: true
+      });
+
+
+  if (error) {
+
+    container.innerHTML =
+      "";
+
+    showMessage(
+      "Data load nahi hua: " +
+      error.message,
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  if (
+    !data ||
+    data.length === 0
+  ) {
+
+    container.innerHTML =
+      '<div class="empty">Koi market nahi hai.</div>';
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    "";
+
+
+  data.forEach(
+    market => {
+
+      container.innerHTML +=
+        createMarketHtml(
+          market
+        );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   MARKET HTML
+   ========================================================= */
+
+function createMarketHtml(
+  market
+) {
+
+  return `
+
+    <div class="market">
+
+
+      <div class="market-header">
+
+        <div>
+
+          <strong>
+            ${escapeHtml(market.name)}
+          </strong>
+
+          <div class="market-id">
+            ID: ${escapeHtml(market.id)}
+          </div>
+
+        </div>
+
+      </div>
+
+
+
+      <div class="market-grid">
+
+
+        <div class="field">
+
+          <label>
+            Market Name
+          </label>
+
+          <input
+            type="text"
+            id="name_${market.id}"
+            value="${escapeHtml(market.name)}"
+          >
+
+        </div>
+
+
+
+        <div class="field">
+
+          <label>
+            Result
+          </label>
+
+          <input
+            type="text"
+            id="number_${market.id}"
+            value="${escapeHtml(market.number)}"
+          >
+
+        </div>
+
+
+
+        <div class="field">
+
+          <label>
+            Open Time
+          </label>
+
+          <input
+            type="time"
+            id="open_${market.id}"
+            value="${timeValue(market.open)}"
+          >
+
+        </div>
+
+
+
+        <div class="field">
+
+          <label>
+            Close Time
+          </label>
+
+          <input
+            type="time"
+            id="close_${market.id}"
+            value="${timeValue(market.close)}"
+          >
+
+        </div>
+
+
+
+        <div class="field">
+
+          <label>
+            Close2 Time
+          </label>
+
+          <input
+            type="time"
+            id="close2_${market.id}"
+            value="${timeValue(market.close2)}"
+          >
+
+        </div>
+
+
+
+        <div class="field">
+
+          <label>
+            Date
+          </label>
+
+          <input
+            type="date"
+            id="date_${market.id}"
+            value="${market.date || ""}"
+          >
+
+        </div>
+
+
+
+        <div class="field">
+
+          <label>
+            Kal Ka Result
+          </label>
+
+          <div class="kal-box">
+
+            ${escapeHtml(
+              market.kal || "--"
+            )}
+
+          </div>
+
+        </div>
+
+
+      </div>
+
+
+
+      <div class="buttons">
+
+
+        <button
+          class="update-btn"
+          onclick="updateMarket(${market.id})"
+        >
+          Update
+        </button>
+
+
+        <button
+          class="delete-btn"
+          onclick="deleteMarket(${market.id})"
+        >
+          Delete
+        </button>
+
+
+      </div>
+
+
+    </div>
+
+  `;
+
+}
+
+
+/* =========================================================
+   ADD NEW MARKET
+   ========================================================= */
+
+async function addMarket() {
+
+  const name =
+    document
+      .getElementById("newName")
+      .value
+      .trim();
+
+
+  const open =
+    document
+      .getElementById("newOpen")
+      .value || null;
+
+
+  const close =
+    document
+      .getElementById("newClose")
+      .value || null;
+
+
+  const close2 =
+    document
+      .getElementById("newClose2")
+      .value || null;
+
+
+  const date =
+    document
+      .getElementById("newDate")
+      .value ||
+    getIndiaToday();
+
+
+  if (!name) {
+
+    showMessage(
+      "Market name bharna zaroori hai.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  const { error } =
+    await db
+
+      .from("Game result")
+
+      .insert({
+
+        name: name,
+
+        number: "**",
+
+        open: open,
+
+        close: close,
+
+        close2: close2,
+
+        date: date,
+
+        kal: null
+
+      });
+
+
+  if (error) {
+
+    console.error(error);
+
+    showMessage(
+      "Market add nahi hua: " +
+      error.message,
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  /* Form clear */
+
+  document.getElementById(
+    "newName"
+  ).value = "";
+
+
+  document.getElementById(
+    "newOpen"
+  ).value = "";
+
+
+  document.getElementById(
+    "newClose"
+  ).value = "";
+
+
+  document.getElementById(
+    "newClose2"
+  ).value = "";
+
+
+  document.getElementById(
+    "newDate"
+  ).value =
+    getIndiaToday();
+
+
+  showMessage(
+    "New market successfully add ho gaya.",
+    "success"
+  );
+
+
+  await loadMarkets();
+
+}
+
+
+/* =========================================================
+   UPDATE MARKET
+   ========================================================= */
+
+async function updateMarket(id) {
+
+  const name =
+    document
+      .getElementById(
+        `name_${id}`
+      )
+      .value
+      .trim();
+
+
+  const number =
+    document
+      .getElementById(
+        `number_${id}`
+      )
+      .value
+      .trim();
+
+
+  const open =
+    document
+      .getElementById(
+        `open_${id}`
+      )
+      .value || null;
+
+
+  const close =
+    document
+      .getElementById(
+        `close_${id}`
+      )
+      .value || null;
+
+
+  const close2 =
+    document
+      .getElementById(
+        `close2_${id}`
+      )
+      .value || null;
+
+
+  const date =
+    document
+      .getElementById(
+        `date_${id}`
+      )
+      .value || null;
+
+
+  if (!name) {
+
+    showMessage(
+      "Market name empty nahi ho sakta.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  if (!number) {
+
+    showMessage(
+      "Result empty nahi ho sakta.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  const { error } =
+    await db
+
+      .from("Game result")
+
+      .update({
+
+        name: name,
+
+        number: number,
+
+        open: open,
+
+        close: close,
+
+        close2: close2,
+
+        date: date
+
+      })
+
+      .eq("id", id);
+
+
+  if (error) {
+
+    console.error(error);
+
+    showMessage(
+      "Market update nahi hua: " +
+      error.message,
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  showMessage(
+    "Market successfully update ho gaya.",
+    "success"
+  );
+
+
+  await loadMarkets();
+
+}
+
+
+/* =========================================================
+   DELETE MARKET
+   ========================================================= */
+
+async function deleteMarket(id) {
+
+  const confirmDelete =
+    confirm(
+      "Kya aap is market ko permanently delete karna chahte ho?"
+    );
+
+
+  if (!confirmDelete) {
+
+    return;
+
+  }
+
+
+  const { error } =
+    await db
+
+      .from("Game result")
+
+      .delete()
+
+      .eq("id", id);
+
+
+  if (error) {
+
+    console.error(error);
+
+    showMessage(
+      "Market delete nahi hua: " +
+      error.message,
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  showMessage(
+    "Market delete ho gaya.",
+    "success"
+  );
+
+
+  await loadMarkets();
+
+}
+
+
+/* =========================================================
+   NEXT INDIA MIDNIGHT
+   ========================================================= */
+
+function scheduleMidnightCheck() {
+
+  const now =
+    new Date();
+
+
+  const indiaNowString =
+    now.toLocaleString(
+      "en-US",
+      {
+        timeZone: "Asia/Kolkata"
+      }
+    );
+
+
+  const indiaNow =
+    new Date(
+      indiaNowString
+    );
+
+
+  const nextMidnight =
+    new Date(indiaNow);
+
+
+  nextMidnight.setDate(
+    nextMidnight.getDate() + 1
+  );
+
+
+  nextMidnight.setHours(
+    0,
+    0,
+    2,
+    0
+  );
+
+
+  const delay =
+    nextMidnight.getTime() -
+    indiaNow.getTime();
+
+
+  setTimeout(
+    async function () {
+
+      await loadMarkets();
+
+      scheduleMidnightCheck();
+
+    },
+    Math.max(
+      delay,
+      1000
+    )
+  );
+
+}
+
+
+/* =========================================================
+   START
+   ========================================================= */
+
+(async function () {
+
+  await loadMarkets();
+
+  scheduleMidnightCheck();
+
+})();
+
+</script>
+
+
+</body>
+
+</html>

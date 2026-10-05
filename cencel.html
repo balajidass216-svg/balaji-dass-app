@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Cancel Transaction</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+body{
+    font-family:Arial;
+    margin:0;
+    padding:15px;
+    background:#e5e7eb;
+}
+
+h2{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.box{
+    background:white;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:15px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+
+label{
+    display:block;
+    font-weight:bold;
+    margin-top:10px;
+    margin-bottom:5px;
+}
+
+select,
+input{
+    width:100%;
+    box-sizing:border-box;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:15px;
+}
+
+.userInfo{
+    background:#f3f4f6;
+    padding:12px;
+    border-radius:8px;
+    margin-top:12px;
+    line-height:1.7;
+}
+
+.showBtn{
+    width:100%;
+    padding:13px;
+    margin-top:15px;
+    background:#2563eb;
+    color:white;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.history{
+    margin-top:15px;
+}
+
+.row{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    padding:7px 0;
+    border-bottom:1px solid #eee;
+}
+
+.row:last-child{
+    border-bottom:none;
+}
+
+.row span:first-child{
+    color:#666;
+}
+
+.row span:last-child{
+    font-weight:bold;
+    text-align:right;
+}
+
+.numberBox{
+    background:#f8fafc;
+    padding:10px;
+    border-radius:8px;
+    margin-top:10px;
+    border:1px solid #e5e7eb;
+}
+
+.number-row{
+    display:flex;
+    justify-content:flex-start;
+    gap:5px;
+    padding:4px 0;
+    font-size:15px;
+    font-weight:bold;
+}
+
+.numberTotal{
+    display:flex;
+    justify-content:space-between;
+    margin-top:8px;
+    padding-top:8px;
+    border-top:2px solid #ddd;
+    font-size:16px;
+}
+
+.moreText{
+    color:#777;
+    font-size:12px;
+    margin-top:3px;
+}
+
+.cancelBtn{
+    width:100%;
+    padding:12px;
+    margin-top:12px;
+    background:#dc2626;
+    color:white;
+    border:none;
+    border-radius:8px;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.cancelled{
+    width:100%;
+    box-sizing:border-box;
+    padding:12px;
+    margin-top:12px;
+    background:#16a34a;
+    color:white;
+    border-radius:8px;
+    text-align:center;
+    font-weight:bold;
+}
+
+.empty{
+    text-align:center;
+    padding:20px;
+    color:#666;
+}
+
+.loading{
+    text-align:center;
+    padding:15px;
+    color:#555;
+}
+
+.errorBox{
+    background:#fee2e2;
+    color:#991b1b;
+    padding:12px;
+    border-radius:8px;
+    margin-top:10px;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<h2>Cancel Transaction</h2>
+
+
+<div class="box">
+
+    <label>Select User</label>
+
+    <select id="userSelect" onchange="showUserInfo()">
+
+        <option value="">
+            Select User
+        </option>
+
+    </select>
+
+
+    <div id="userInfo" class="userInfo">
+
+        User select karo
+
+    </div>
+
+
+    <label>Select Date</label>
+
+    <input
+        type="date"
+        id="date"
+    >
+
+
+    <button
+        class="showBtn"
+        onclick="loadHistory()"
+    >
+        SHOW HISTORY
+    </button>
+
+</div>
+
+
+<div
+    id="historyList"
+    class="history"
+></div>
+
+
+
+<script>
+
+
+// ===============================
+// SUPABASE
+// ===============================
+
+const SUPABASE_URL =
+"https://glhomrlwnwhevunfubog.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB";
+
+
+const client =
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
+
+// ===============================
+// LOAD USERS
+// ===============================
+
+async function loadUsers(){
+
+    const select =
+        document.getElementById("userSelect");
+
+
+    select.innerHTML =
+        `<option value="">Select User</option>`;
+
+
+    const {
+        data,
+        error
+    } = await client
+        .from("login")
+        .select("id,name,mobile,balance")
+        .order("id", {
+            ascending:true
+        });
+
+
+    if(error){
+
+        console.log(error);
+
+        document.getElementById("historyList").innerHTML =
+            `<div class="errorBox">
+                Users load nahi hue.
+             </div>`;
+
+        return;
+    }
+
+
+    data.forEach(user => {
+
+        const option =
+            document.createElement("option");
+
+
+        option.value =
+            user.id;
+
+
+        option.textContent =
+            `${user.id} - ${user.name || "No Name"} - ${user.mobile || ""}`;
+
+
+        option.dataset.name =
+            user.name || "";
+
+
+        option.dataset.mobile =
+            user.mobile || "";
+
+
+        option.dataset.balance =
+            user.balance || 0;
+
+
+        select.appendChild(option);
+
+    });
+
+}
+
+
+
+// ===============================
+// SHOW USER INFO
+// ===============================
+
+function showUserInfo(){
+
+    const select =
+        document.getElementById("userSelect");
+
+
+    const option =
+        select.options[select.selectedIndex];
+
+
+    const info =
+        document.getElementById("userInfo");
+
+
+    if(!select.value){
+
+        info.innerHTML =
+            "User select karo";
+
+        return;
+    }
+
+
+    info.innerHTML = `
+
+        <b>Name:</b>
+        ${option.dataset.name || "-"}
+        <br>
+
+        <b>Mobile:</b>
+        ${option.dataset.mobile || "-"}
+        <br>
+
+        <b>Balance:</b>
+        ₹ ${option.dataset.balance || 0}
+
+    `;
+
+}
+
+
+
+// ===============================
+// LOAD HISTORY
+// ===============================
+
+async function loadHistory(){
+
+    const userId =
+        document.getElementById("userSelect").value;
+
+
+    const historyList =
+        document.getElementById("historyList");
+
+
+    if(!userId){
+
+        alert("Please select user");
+
+        return;
+    }
+
+
+    historyList.innerHTML =
+        `<div class="loading">
+            Loading history...
+         </div>`;
+
+
+    const {
+        data,
+        error
+    } = await client
+        .from("history")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", {
+            ascending:false
+        });
+
+
+    if(error){
+
+        console.log(error);
+
+        historyList.innerHTML =
+            `<div class="errorBox">
+                ${error.message}
+             </div>`;
+
+        return;
+    }
+
+
+    showHistory(data || []);
+
+}
+
+
+
+// ===============================
+// SHOW HISTORY
+// ===============================
+
+function showHistory(data){
+
+    const historyList =
+        document.getElementById("historyList");
+
+
+    if(!data || data.length === 0){
+
+        historyList.innerHTML =
+            `<div class="box empty">
+                Is user ki koi history nahi mili.
+             </div>`;
+
+        return;
+    }
+
+
+    historyList.innerHTML = "";
+
+
+    data.forEach(item => {
+
+
+        // ===============================
+        // STATUS
+        // ===============================
+
+        let status =
+            String(item.status || "")
+            .toLowerCase();
+
+
+        const isCancelled =
+            status === "cancelled" ||
+            status === "canceled" ||
+            status === "refunded";
+
+
+        if(isCancelled){
+
+            status = "CANCELLED / REFUNDED";
+
+        }else{
+
+            status =
+                item.status || "ACTIVE";
+
+        }
+
+
+
+        // ===============================
+        // TIME
+        // ===============================
+
+        let time = "-";
+
+
+        if(item.created_at){
+
+            time =
+                new Date(item.created_at)
+                .toLocaleString("en-IN");
+
+        }
+
+
+
+        // ===============================
+        // DATA JSON
+        // ===============================
+
+        let entries = [];
+
+
+        try{
+
+            if(typeof item.data === "string"){
+
+                entries =
+                    JSON.parse(item.data);
+
+            }else{
+
+                entries =
+                    item.data;
+
+            }
+
+
+            if(!Array.isArray(entries)){
+
+                entries = [];
+
+            }
+
+        }catch(error){
+
+            console.log(
+                "DATA JSON ERROR:",
+                error
+            );
+
+            entries = [];
+
+        }
+
+
+
+        // ===============================
+        // TOTAL OF ALL ENTRIES
+        // ===============================
+
+        let dataTotal = 0;
+
+
+        entries.forEach(entry => {
+
+            dataTotal +=
+                Number(entry.amount || 0);
+
+        });
+
+
+
+        // ===============================
+        // ONLY FIRST 2 ENTRIES SHOW
+        // ===============================
+
+        const firstTwo =
+            entries.slice(0, 2);
+
+
+        let numberHtml = "";
+
+
+        firstTwo.forEach(entry => {
+
+            numberHtml += `
+
+                <div class="number-row">
+
+                    <span>
+                        ${entry.number ?? "-"}
+                    </span>
+
+                    <span>
+                        = ₹${entry.amount ?? 0}
+                    </span>
+
+                </div>
+
+            `;
+
+        });
+
+
+
+        if(firstTwo.length === 0){
+
+            numberHtml =
+                `<div class="empty">
+                    Number data nahi hai.
+                 </div>`;
+
+        }
+
+
+
+        // ===============================
+        // MORE ENTRIES TEXT
+        // ===============================
+
+        let moreText = "";
+
+
+        if(entries.length > 2){
+
+            moreText = `
+
+                <div class="moreText">
+
+                    + ${entries.length - 2}
+                    aur entries
+
+                </div>
+
+            `;
+
+        }
+
+
+
+        // ===============================
+        // CARD
+        // ===============================
+
+        const card =
+            document.createElement("div");
+
+
+        card.className = "box";
+
+
+        card.innerHTML = `
+
+            <div class="row">
+
+                <span>
+                    History ID
+                </span>
+
+                <span>
+                    ${item.id ?? "-"}
+                </span>
+
+            </div>
+
+
+            <div class="row">
+
+                <span>
+                    User ID
+                </span>
+
+                <span>
+                    ${item.user_id ?? "-"}
+                </span>
+
+            </div>
+
+
+            <div class="row">
+
+                <span>
+                    Market
+                </span>
+
+                <span>
+                    ${item.market ?? "-"}
+                </span>
+
+            </div>
+
+
+            <div class="row">
+
+                <span>
+                    Mode
+                </span>
+
+                <span>
+                    ${item.mode ?? "-"}
+                </span>
+
+            </div>
+
+
+            <div class="row">
+
+                <span>
+                    Status
+                </span>
+
+                <span>
+                    ${status}
+                </span>
+
+            </div>
+
+
+            <div class="row">
+
+                <span>
+                    Time
+                </span>
+
+                <span>
+                    ${time}
+                </span>
+
+            </div>
+
+
+            <!-- NUMBERS -->
+
+            <div class="numberBox">
+
+                ${numberHtml}
+
+                ${moreText}
+
+                <div class="numberTotal">
+
+                    <b>
+                        TOTAL
+                    </b>
+
+                    <b>
+                        ₹${dataTotal}
+                    </b>
+
+                </div>
+
+            </div>
+
+
+            ${
+                isCancelled
+
+                ?
+
+                `
+                <div class="cancelled">
+
+                    CANCELLED / REFUNDED
+
+                </div>
+                `
+
+                :
+
+                `
+                <button
+                    class="cancelBtn"
+                    onclick="cancelTransaction('${item.id}')"
+                >
+
+                    CANCEL + REFUND
+
+                </button>
+                `
+            }
+
+        `;
+
+
+        historyList.appendChild(card);
+
+    });
+
+}
+
+
+
+// ===============================
+// CANCEL TRANSACTION
+// ===============================
+
+async function cancelTransaction(historyId){
+
+    if(!confirm(
+        "Kya aap is transaction ko cancel karke refund karna chahte ho?"
+    )){
+
+        return;
+
+    }
+
+
+    try{
+
+        const {
+            data,
+            error
+        } = await client.rpc(
+            "cancel_demo_transaction",
+            {
+                p_history_id: historyId
+            }
+        );
+
+
+        if(error){
+
+            console.log(
+                "CANCEL ERROR:",
+                error
+            );
+
+            alert(
+                "Cancel Error ❌\n" +
+                error.message
+            );
+
+            return;
+
+        }
+
+
+        console.log(
+            "CANCEL RESPONSE:",
+            data
+        );
+
+
+        if(!data || data.success !== true){
+
+            alert(
+                data?.message ||
+                "Transaction cancel nahi hui ❌"
+            );
+
+            return;
+
+        }
+
+
+        alert(
+            "Transaction Cancelled ✅\n\n" +
+            "Refund: ₹" +
+            (data.refund_amount || 0)
+        );
+
+
+        // HISTORY REFRESH
+
+        await loadHistory();
+
+
+        // BALANCE REFRESH
+
+        await refreshUserBalance();
+
+    }
+    catch(error){
+
+        console.log(
+            "CANCEL ERROR:",
+            error
+        );
+
+        alert(
+            "Server Error ❌"
+        );
+
+    }
+
+}
+
+
+
+// ===============================
+// REFRESH USER BALANCE
+// ===============================
+
+async function refreshUserBalance(){
+
+    const userId =
+        document.getElementById("userSelect").value;
+
+
+    if(!userId){
+
+        return;
+
+    }
+
+
+    const {
+        data,
+        error
+    } = await client
+        .from("login")
+        .select("name,mobile,balance")
+        .eq("id", userId)
+        .single();
+
+
+    if(error){
+
+        console.log(
+            "BALANCE ERROR:",
+            error
+        );
+
+        return;
+
+    }
+
+
+    const info =
+        document.getElementById("userInfo");
+
+
+    info.innerHTML = `
+
+        <b>Name:</b>
+        ${data.name || "-"}
+        <br>
+
+        <b>Mobile:</b>
+        ${data.mobile || "-"}
+        <br>
+
+        <b>Balance:</b>
+        ₹ ${data.balance || 0}
+
+    `;
+
+}
+
+
+
+// ===============================
+// START
+// ===============================
+
+loadUsers();
+
+
+</script>
+
+</body>
+
+</html>

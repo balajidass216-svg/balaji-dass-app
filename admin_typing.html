@@ -1,0 +1,796 @@
+
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Typing Image Admin</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  font-family:Arial,sans-serif;
+  margin:0;
+  background:#f1f5f9;
+}
+
+.header{
+  background:#fff;
+  padding:15px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.filters{
+  background:#fff;
+  margin:10px;
+  padding:12px;
+  border-radius:10px;
+}
+
+.filterRow{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.filterBox{
+  flex:1;
+  min-width:150px;
+}
+
+.filterBox label{
+  display:block;
+  font-size:12px;
+  color:#666;
+  margin-bottom:5px;
+}
+
+.filterBox input,
+.filterBox select{
+  width:100%;
+  height:42px;
+  border:1px solid #ddd;
+  border-radius:8px;
+  padding:0 10px;
+  font-size:14px;
+  outline:none;
+  background:#fff;
+}
+
+.filterBox input:focus,
+.filterBox select:focus{
+  border-color:#ff9800;
+}
+
+.count{
+  margin:10px;
+  font-size:14px;
+  font-weight:bold;
+  color:#555;
+}
+
+.card{
+  background:#fff;
+  margin:10px;
+  padding:12px;
+  border-radius:10px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+}
+
+.topRow{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.market{
+  font-weight:bold;
+  color:red;
+}
+
+.date{
+  font-size:12px;
+  color:#666;
+  text-align:right;
+}
+
+.info{
+  margin-top:8px;
+  font-size:14px;
+  line-height:1.6;
+}
+
+.ref{
+  color:#1565c0;
+  font-weight:bold;
+}
+
+.total{
+  margin-top:10px;
+  font-weight:bold;
+  color:green;
+}
+
+.contentImage{
+  width:100%;
+  height:auto;
+  border-radius:10px;
+  margin-top:10px;
+}
+
+.text{
+  white-space:pre-wrap;
+  background:#f1f5f9;
+  padding:8px;
+  border-radius:8px;
+  margin-top:10px;
+  word-break:break-word;
+}
+
+.empty{
+  text-align:center;
+  padding:30px;
+  color:#777;
+}
+
+.loading{
+  text-align:center;
+  padding:30px;
+  color:#777;
+}
+
+@media(max-width:600px){
+
+  .filterBox{
+    min-width:100%;
+  }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="header">
+  Typing Image Admin
+</div>
+
+
+<!-- AUTO FILTERS -->
+
+<div class="filters">
+
+  <div class="filterRow">
+
+
+    <!-- DATE -->
+
+    <div class="filterBox">
+
+      <label>
+        Date
+      </label>
+
+      <input
+        type="date"
+        id="dateFilter"
+      >
+
+    </div>
+
+
+    <!-- USER ID -->
+
+    <div class="filterBox">
+
+      <label>
+        User ID
+      </label>
+
+      <select id="userFilter">
+
+        <option value="">
+          All User ID
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <!-- REF BY -->
+
+    <div class="filterBox">
+
+      <label>
+        Ref By
+      </label>
+
+      <select id="refFilter">
+
+        <option value="">
+          All Ref By
+        </option>
+
+      </select>
+
+    </div>
+
+
+  </div>
+
+</div>
+
+
+<div
+  id="count"
+  class="count">
+</div>
+
+
+<div id="historyBox">
+
+  <div class="loading">
+    Loading...
+  </div>
+
+</div>
+
+
+<script>
+
+
+/* =========================
+   SUPABASE
+========================= */
+
+const client =
+supabase.createClient(
+
+  "https://glhomrlwnwhevunfubog.supabase.co",
+
+  "sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB"
+
+);
+
+
+/* =========================
+   ALL DATA
+========================= */
+
+let allData = [];
+
+
+/* =========================
+   LOAD DATA
+========================= */
+
+async function loadData(){
+
+  const {
+    data,
+    error
+  } = await client
+
+    .from("typing_image")
+
+    .select("*")
+
+    .order(
+      "id",
+      {
+        ascending:false
+      }
+    );
+
+
+  if(error){
+
+    console.error(error);
+
+    document.getElementById(
+      "historyBox"
+    ).innerHTML =
+      '<div class="empty">Error loading data</div>';
+
+    return;
+
+  }
+
+
+  allData =
+    data || [];
+
+
+  createUserList();
+
+  createRefList();
+
+  applyFilter();
+
+}
+
+
+/* =========================
+   USER ID LIST
+========================= */
+
+function createUserList(){
+
+  const select =
+    document.getElementById(
+      "userFilter"
+    );
+
+
+  const users =
+    [
+      ...new Set(
+
+        allData
+
+          .map(item =>
+            item.user_id
+          )
+
+          .filter(value =>
+            value !== null &&
+            value !== undefined &&
+            value !== ""
+          )
+
+      )
+    ];
+
+
+  users.sort(
+    (a,b) =>
+      String(a).localeCompare(
+        String(b)
+      )
+  );
+
+
+  select.innerHTML = `
+    <option value="">
+      All User ID
+    </option>
+  `;
+
+
+  users.forEach(userId => {
+
+    const option =
+      document.createElement(
+        "option"
+      );
+
+    option.value =
+      userId;
+
+    option.textContent =
+      userId;
+
+    select.appendChild(
+      option
+    );
+
+  });
+
+}
+
+
+/* =========================
+   REF BY LIST
+========================= */
+
+function createRefList(){
+
+  const select =
+    document.getElementById(
+      "refFilter"
+    );
+
+
+  const refs =
+    [
+      ...new Set(
+
+        allData
+
+          .map(item =>
+            item.ref_by
+          )
+
+          .filter(value =>
+            value !== null &&
+            value !== undefined &&
+            value !== ""
+          )
+
+      )
+    ];
+
+
+  refs.sort(
+    (a,b) =>
+      String(a).localeCompare(
+        String(b)
+      )
+  );
+
+
+  select.innerHTML = `
+    <option value="">
+      All Ref By
+    </option>
+  `;
+
+
+  refs.forEach(refBy => {
+
+    const option =
+      document.createElement(
+        "option"
+      );
+
+    option.value =
+      refBy;
+
+    option.textContent =
+      refBy;
+
+    select.appendChild(
+      option
+    );
+
+  });
+
+}
+
+
+/* =========================
+   AUTO FILTER
+========================= */
+
+function applyFilter(){
+
+  const date =
+    document.getElementById(
+      "dateFilter"
+    ).value;
+
+
+  const userId =
+    document.getElementById(
+      "userFilter"
+    ).value;
+
+
+  const refBy =
+    document.getElementById(
+      "refFilter"
+    ).value;
+
+
+  const filtered =
+    allData.filter(item => {
+
+
+      /* DATE */
+
+      let matchDate =
+        true;
+
+
+      if(date){
+
+        if(!item.created_at){
+
+          matchDate = false;
+
+        }
+        else{
+
+          const itemDate =
+            new Date(
+              item.created_at
+            );
+
+
+          const year =
+            itemDate.getFullYear();
+
+
+          const month =
+            String(
+              itemDate.getMonth() + 1
+            ).padStart(
+              2,
+              "0"
+            );
+
+
+          const day =
+            String(
+              itemDate.getDate()
+            ).padStart(
+              2,
+              "0"
+            );
+
+
+          const itemDateString =
+            year +
+            "-" +
+            month +
+            "-" +
+            day;
+
+
+          matchDate =
+            itemDateString === date;
+
+        }
+
+      }
+
+
+      /* USER ID */
+
+      let matchUser =
+        true;
+
+
+      if(userId){
+
+        matchUser =
+          String(
+            item.user_id || ""
+          ) ===
+          String(userId);
+
+      }
+
+
+      /* REF BY */
+
+      let matchRef =
+        true;
+
+
+      if(refBy){
+
+        matchRef =
+          String(
+            item.ref_by || ""
+          ) ===
+          String(refBy);
+
+      }
+
+
+      return (
+        matchDate &&
+        matchUser &&
+        matchRef
+      );
+
+    });
+
+
+  showData(
+    filtered
+  );
+
+}
+
+
+/* =========================
+   SHOW DATA
+========================= */
+
+function showData(data){
+
+  const box =
+    document.getElementById(
+      "historyBox"
+    );
+
+
+  document.getElementById(
+    "count"
+  ).innerText =
+    "Total Records: " +
+    data.length;
+
+
+  if(!data.length){
+
+    box.innerHTML =
+      '<div class="empty">No Data Found</div>';
+
+    return;
+
+  }
+
+
+  let html = "";
+
+
+  data.forEach(item => {
+
+
+    let date =
+      item.created_at
+
+      ? new Date(
+          item.created_at
+        ).toLocaleString()
+
+      : "N/A";
+
+
+    let content = "";
+
+
+    if(
+      item.data &&
+      String(item.data).includes("http")
+    ){
+
+      content = `
+
+        <img
+          class="contentImage"
+          src="${item.data}"
+        >
+
+      `;
+
+    }
+    else{
+
+      content = `
+
+        <div class="text">
+          ${item.data || ""}
+        </div>
+
+      `;
+
+    }
+
+
+    html += `
+
+      <div class="card">
+
+
+        <div class="topRow">
+
+          <div class="market">
+            ${item.market || ""}
+          </div>
+
+          <div class="date">
+            ${date}
+          </div>
+
+        </div>
+
+
+        <div class="info">
+
+          <div>
+            <b>User ID:</b>
+            ${item.user_id || ""}
+          </div>
+
+
+          <div>
+
+            <b>Ref By:</b>
+
+            <span class="ref">
+              ${item.ref_by || ""}
+            </span>
+
+          </div>
+
+
+        </div>
+
+
+        ${content}
+
+
+        <div class="total">
+
+          Total: ₹
+          ${item.total || 0}
+
+        </div>
+
+
+      </div>
+
+    `;
+
+  });
+
+
+  box.innerHTML =
+    html;
+
+}
+
+
+/* =========================
+   DATE AUTO FILTER
+========================= */
+
+document.getElementById(
+  "dateFilter"
+).addEventListener(
+  "change",
+  applyFilter
+);
+
+
+/* =========================
+   USER AUTO FILTER
+========================= */
+
+document.getElementById(
+  "userFilter"
+).addEventListener(
+  "change",
+  applyFilter
+);
+
+
+/* =========================
+   REF BY AUTO FILTER
+========================= */
+
+document.getElementById(
+  "refFilter"
+).addEventListener(
+  "change",
+  applyFilter
+);
+
+
+/* =========================
+   START
+========================= */
+
+loadData();
+
+
+</script>
+
+
+</body>
+
+</html>
+```

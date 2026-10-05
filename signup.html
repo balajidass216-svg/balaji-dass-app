@@ -1,0 +1,244 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Signup</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #f2f2f2;
+      text-align: center;
+    }
+
+    .top {
+      background: red;
+      height: 50px;
+    }
+
+    .logo {
+      margin-top: 20px;
+    }
+
+    .logo img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    h1 {
+      color: red;
+    }
+
+    .box {
+      background: white;
+      margin: 20px;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    input {
+      width: 90%;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 30px;
+      border: none;
+      background: #f2f2f2;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    .register-btn {
+      width: 90%;
+      padding: 15px;
+      background: #2d8cff;
+      color: white;
+      border: none;
+      border-radius: 30px;
+      font-size: 18px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    .back {
+      margin-top: 15px;
+      color: red;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="top"></div>
+
+<div class="logo">
+  <img src="https://i.ibb.co/6bQGZpG/gold-logo.png">
+</div>
+
+<h1>Signup</h1>
+
+<div class="box">
+
+  <input
+    id="name"
+    type="text"
+    placeholder="Full Name"
+  >
+
+  <input
+    id="mobile"
+    type="tel"
+    inputmode="numeric"
+    maxlength="10"
+    placeholder="Mobile Number"
+    oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)"
+  >
+
+  <input
+    id="password"
+    type="password"
+    placeholder="Password"
+  >
+
+  <input
+    id="ref_code"
+    type="text"
+    placeholder="Referral Code (Optional)"
+  >
+
+  <button class="register-btn" onclick="signup()">
+    REGISTER NOW
+  </button>
+
+  <p class="back" onclick="goLogin()">
+    Back to Login
+  </p>
+
+</div>
+
+<script>
+
+// ================================
+// SUPABASE
+// ================================
+
+const SUPABASE_URL =
+"https://glhomrlwnwhevunfubog.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB";
+
+const client = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+
+// ================================
+// SIGNUP
+// ================================
+
+async function signup() {
+
+  let name =
+    document.getElementById("name").value.trim();
+
+  let mobile =
+    document.getElementById("mobile").value.trim();
+
+  let password =
+    document.getElementById("password").value;
+
+  let ref_code =
+    document.getElementById("ref_code").value.trim();
+
+
+  // ================================
+  // VALIDATION
+  // ================================
+
+  if (!name || !mobile || !password) {
+
+    alert("Name, Mobile aur Password fill karo");
+
+    return;
+  }
+
+
+  if (!/^\d{10}$/.test(mobile)) {
+
+    alert("Mobile number exactly 10 digits ka hona chahiye");
+
+    return;
+  }
+
+
+  // ================================
+  // INSERT INTO SUPABASE
+  // ================================
+
+  let { data, error } = await client
+    .from("login")
+    .insert([
+      {
+        name: name,
+        mobile: mobile,
+        password: password,
+        balance: 0,
+      ref_by: ref_code || null
+      }
+    ])
+    .select();
+
+
+  // ================================
+  // ERROR
+  // ================================
+
+  if (error) {
+
+    if (error.code === "23505") {
+
+      alert("Ye mobile number already registered hai.");
+
+    } else {
+
+      alert("Error: " + error.message);
+
+    }
+
+    return;
+  }
+
+
+  // ================================
+  // SUCCESS
+  // ================================
+
+  alert("Signup Success ✅");
+
+  window.location.href = "index.html";
+}
+
+
+// ================================
+// BACK TO LOGIN
+// ================================
+
+function goLogin() {
+
+  window.location.href = "index.html";
+
+}
+
+</script>
+
+</body>
+</html>
+```

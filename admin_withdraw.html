@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Admin Withdraw</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    padding:15px;
+    font-family:Arial,sans-serif;
+    background:#f2f2f2;
+}
+
+.header{
+    background:#fff;
+    padding:18px;
+    border-radius:20px;
+    margin-bottom:15px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+}
+
+.header h2{
+    margin:0;
+    text-align:center;
+}
+
+.card{
+    background:#fff;
+    padding:18px;
+    border-radius:20px;
+    margin-bottom:15px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+}
+
+.withdraw-item{
+    border:1px solid #eee;
+    border-radius:15px;
+    padding:15px;
+    margin-bottom:12px;
+    background:#fafafa;
+}
+
+.top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+}
+
+.amount{
+    font-size:22px;
+    font-weight:bold;
+}
+
+.status{
+    padding:6px 10px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:bold;
+}
+
+.pending{
+    background:#fff3cd;
+    color:#856404;
+}
+
+.clear{
+    background:#d4edda;
+    color:#155724;
+}
+
+.cancelled{
+    background:#f8d7da;
+    color:#721c24;
+}
+
+.info{
+    margin-top:10px;
+    font-size:14px;
+    line-height:1.6;
+}
+
+.info b{
+    color:#333;
+}
+
+.date{
+    color:#777;
+    font-size:12px;
+    margin-top:8px;
+}
+
+.buttons{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+}
+
+.btn{
+    flex:1;
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    color:#fff;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.accept{
+    background:#28a745;
+}
+
+.cancel{
+    background:#dc3545;
+}
+
+.btn:active{
+    transform:scale(.97);
+}
+
+.empty{
+    text-align:center;
+    color:#777;
+    padding:25px 10px;
+}
+
+.loading{
+    text-align:center;
+    padding:20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+<div class="header">
+
+    <h2>Admin Withdraw</h2>
+
+</div>
+
+
+<div class="card">
+
+    <div id="withdrawList">
+
+        <div class="loading">
+            Loading...
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================
+   SUPABASE
+========================= */
+
+const client = supabase.createClient(
+
+    "https://glhomrlwnwhevunfubog.supabase.co",
+
+    "sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB"
+
+);
+
+
+/* =========================
+   LOAD WITHDRAW REQUESTS
+========================= */
+
+async function loadWithdraws(){
+
+    const list =
+        document.getElementById("withdrawList");
+
+
+    const { data, error } = await client
+
+        .from("withdraw_requests")
+
+        .select(`
+            id,
+            user_id,
+            mobile,
+            amount,
+            status,
+            created_at
+        `)
+
+        .order("created_at", {
+            ascending:false
+        });
+
+
+    if(error){
+
+        console.log(error);
+
+        list.innerHTML = `
+
+            <div class="empty">
+
+                Withdraw requests load nahi hui ❌
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    if(!data || data.length === 0){
+
+        list.innerHTML = `
+
+            <div class="empty">
+
+                Abhi koi withdraw request nahi hai.
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    list.innerHTML = "";
+
+
+    data.forEach(item => {
+
+
+        let status =
+            String(item.status || "pending")
+            .toLowerCase();
+
+
+        let statusText = "Pending";
+
+        let statusClass = "pending";
+
+
+        if(
+            status === "clear" ||
+            status === "accepted" ||
+            status === "accept" ||
+            status === "approved"
+        ){
+
+            statusText = "Clear";
+
+            statusClass = "clear";
+
+        }
+
+
+        if(
+            status === "cancel" ||
+            status === "cancelled" ||
+            status === "canceled"
+        ){
+
+            statusText = "Cancelled";
+
+            statusClass = "cancelled";
+
+        }
+
+
+        let date = "";
+
+        if(item.created_at){
+
+            date =
+                new Date(item.created_at)
+                .toLocaleString("en-IN");
+
+        }
+
+
+        let buttons = "";
+
+
+        /* =========================
+           ONLY PENDING REQUEST
+           SHOW ACTION BUTTONS
+        ========================= */
+
+        if(status === "pending"){
+
+            buttons = `
+
+                <div class="buttons">
+
+                    <button
+                        class="btn accept"
+                        onclick="acceptWithdraw('${item.id}')">
+
+                        ACCEPT
+
+                    </button>
+
+
+                    <button
+                        class="btn cancel"
+                        onclick="cancelWithdraw('${item.id}')">
+
+                        CANCEL
+
+                    </button>
+
+                </div>
+
+            `;
+
+        }
+
+
+        list.innerHTML += `
+
+            <div class="withdraw-item">
+
+                <div class="top">
+
+                    <div class="amount">
+
+                        ₹ ${item.amount}
+
+                    </div>
+
+
+                    <div class="status ${statusClass}">
+
+                        ${statusText}
+
+                    </div>
+
+                </div>
+
+
+                <div class="info">
+
+                    <div>
+                        <b>Request ID:</b>
+                        ${item.id}
+                    </div>
+
+                    <div>
+                        <b>User ID:</b>
+                        ${item.user_id || "--"}
+                    </div>
+
+                    <div>
+                        <b>Mobile:</b>
+                        ${item.mobile || "--"}
+                    </div>
+
+                </div>
+
+
+                <div class="date">
+
+                    ${date}
+
+                </div>
+
+
+                ${buttons}
+
+            </div>
+
+        `;
+
+    });
+
+}
+
+
+/* =========================
+   ACCEPT WITHDRAW
+========================= */
+
+async function acceptWithdraw(id){
+
+    const confirmAccept =
+        confirm(
+            "Is withdraw request ko ACCEPT karna hai?"
+        );
+
+
+    if(!confirmAccept){
+
+        return;
+
+    }
+
+
+    const { error } = await client
+
+        .from("withdraw_requests")
+
+        .update({
+
+            status:"clear"
+
+        })
+
+        .eq("id",id);
+
+
+    if(error){
+
+        console.log(error);
+
+        alert(
+            "Withdraw accept nahi hui ❌"
+        );
+
+        return;
+    }
+
+
+    alert(
+        "Withdraw request ACCEPT ho gayi ✅"
+    );
+
+
+    loadWithdraws();
+
+}
+
+
+/* =========================
+   CANCEL WITHDRAW
+========================= */
+
+async function cancelWithdraw(id){
+
+    const confirmCancel =
+        confirm(
+            "Is withdraw request ko CANCEL karna hai?"
+        );
+
+
+    if(!confirmCancel){
+
+        return;
+
+    }
+
+
+    const { error } = await client
+
+        .from("withdraw_requests")
+
+        .update({
+
+            status:"cancelled"
+
+        })
+
+        .eq("id",id);
+
+
+    if(error){
+
+        console.log(error);
+
+        alert(
+            "Withdraw cancel nahi hui ❌"
+        );
+
+        return;
+    }
+
+
+    alert(
+        "Withdraw request CANCEL ho gayi."
+    );
+
+
+    loadWithdraws();
+
+}
+
+
+/* =========================
+   FIRST LOAD
+========================= */
+
+loadWithdraws();
+
+
+/* =========================
+   AUTO REFRESH
+========================= */
+
+setInterval(() => {
+
+    loadWithdraws();
+
+},5000);
+
+</script>
+
+
+</body>
+
+</html>

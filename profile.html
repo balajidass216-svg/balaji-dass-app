@@ -1,0 +1,946 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>My Profile</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:linear-gradient(135deg,#f7f7f7,#ededed);
+  color:#222;
+}
+
+/* ================================
+   HEADER
+================================ */
+
+.header{
+  background:linear-gradient(135deg,#ff0000,#d90000);
+  color:white;
+  padding:22px 15px;
+  text-align:center;
+  font-size:23px;
+  font-weight:bold;
+  box-shadow:0 3px 12px rgba(0,0,0,.15);
+}
+
+/* ================================
+   MAIN
+================================ */
+
+.profile-card{
+  max-width:650px;
+  margin:22px auto;
+  padding:0 15px 25px;
+}
+
+/* ================================
+   PROFILE TOP
+================================ */
+
+.profile-top{
+  background:white;
+  border-radius:22px;
+  padding:25px 20px;
+  text-align:center;
+  box-shadow:0 5px 20px rgba(0,0,0,.10);
+  margin-bottom:15px;
+}
+
+.profile-icon{
+  width:72px;
+  height:72px;
+  margin:auto;
+  border-radius:50%;
+  background:linear-gradient(135deg,#ff0000,#ff5555);
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:32px;
+  font-weight:bold;
+  box-shadow:0 5px 15px rgba(255,0,0,.25);
+}
+
+.profile-heading{
+  margin-top:12px;
+  font-size:21px;
+  font-weight:bold;
+}
+
+.profile-sub{
+  margin-top:5px;
+  color:#777;
+  font-size:13px;
+}
+
+/* ================================
+   INFO CARD
+================================ */
+
+.info-card{
+  background:white;
+  border-radius:20px;
+  padding:8px 20px;
+  box-shadow:0 4px 18px rgba(0,0,0,.08);
+  margin-bottom:15px;
+}
+
+.section-title{
+  font-size:17px;
+  font-weight:bold;
+  padding:15px 0 8px;
+  color:#111;
+}
+
+/* ================================
+   DETAILS
+================================ */
+
+.detail{
+  padding:14px 0;
+  border-bottom:1px solid #eeeeee;
+}
+
+.detail:last-child{
+  border-bottom:none;
+}
+
+.label{
+  font-size:12px;
+  color:#888;
+  margin-bottom:5px;
+  font-weight:bold;
+  text-transform:uppercase;
+  letter-spacing:.3px;
+}
+
+.value{
+  font-size:16px;
+  font-weight:bold;
+  color:#222;
+  word-break:break-word;
+}
+
+/* ================================
+   INPUT
+================================ */
+
+.input{
+  width:100%;
+  padding:14px;
+  border:1px solid #ddd;
+  border-radius:12px;
+  background:#fafafa;
+  font-size:16px;
+  outline:none;
+  transition:.2s;
+}
+
+.input:focus{
+  border-color:red;
+  background:white;
+  box-shadow:0 0 0 3px rgba(255,0,0,.08);
+}
+
+/* ================================
+   QR
+================================ */
+
+.qrBox{
+  text-align:center;
+  padding:15px 0 10px;
+}
+
+.qrImage{
+  width:190px;
+  height:190px;
+  object-fit:contain;
+  border:1px solid #ddd;
+  border-radius:16px;
+  display:none;
+  margin:5px auto 15px;
+  padding:7px;
+  background:white;
+  box-shadow:0 3px 12px rgba(0,0,0,.08);
+}
+
+.qrInput{
+  width:100%;
+  padding:12px;
+  border:1px dashed #bbb;
+  border-radius:12px;
+  background:#fafafa;
+  font-size:14px;
+}
+
+/* ================================
+   SAVE BUTTON
+================================ */
+
+.saveBtn{
+  width:100%;
+  padding:16px;
+  margin-top:5px;
+  border:0;
+  border-radius:14px;
+  background:linear-gradient(135deg,#ff0000,#d80000);
+  color:white;
+  font-size:17px;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:0 5px 15px rgba(255,0,0,.22);
+  transition:.2s;
+}
+
+.saveBtn:hover{
+  transform:translateY(-1px);
+}
+
+.saveBtn:active{
+  transform:scale(.98);
+}
+
+/* ================================
+   MESSAGE
+================================ */
+
+.message{
+  text-align:center;
+  margin-top:14px;
+  min-height:20px;
+  font-weight:bold;
+  color:#159447;
+  font-size:14px;
+}
+
+/* ================================
+   MOBILE
+================================ */
+
+@media(max-width:500px){
+
+  .header{
+    font-size:21px;
+    padding:19px 12px;
+  }
+
+  .profile-card{
+    margin:15px auto;
+    padding:0 10px 20px;
+  }
+
+  .profile-top{
+    padding:22px 15px;
+  }
+
+  .info-card{
+    padding:8px 16px;
+  }
+
+  .value{
+    font-size:15px;
+  }
+
+  .qrImage{
+    width:175px;
+    height:175px;
+  }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+<!-- ================================
+     HEADER
+================================ -->
+
+<div class="header">
+  My Profile
+</div>
+
+
+<div class="profile-card">
+
+
+  <!-- ================================
+       PROFILE TOP
+  ================================= -->
+
+  <div class="profile-top">
+
+    <div class="profile-icon">
+      👤
+    </div>
+
+    <div class="profile-heading">
+      My Account
+    </div>
+
+    <div class="profile-sub">
+      View and update your account details
+    </div>
+
+  </div>
+
+
+  <!-- ================================
+       BASIC INFORMATION
+  ================================= -->
+
+  <div class="info-card">
+
+    <div class="section-title">
+      👤 Account Information
+    </div>
+
+
+    <!-- USER ID -->
+
+    <div class="detail">
+
+      <div class="label">
+        User ID
+      </div>
+
+      <div
+        class="value"
+        id="userId">
+
+        Loading...
+
+      </div>
+
+    </div>
+
+
+    <!-- USER NAME -->
+
+    <div class="detail">
+
+      <div class="label">
+        User Name
+      </div>
+
+      <div
+        class="value"
+        id="userName">
+
+        Loading...
+
+      </div>
+
+    </div>
+
+
+    <!-- MOBILE -->
+
+    <div class="detail">
+
+      <div class="label">
+        Mobile Number
+      </div>
+
+      <div
+        class="value"
+        id="userMobile">
+
+        Loading...
+
+      </div>
+
+    </div>
+
+
+    <!-- REFER CODE -->
+
+    <div class="detail">
+
+      <div class="label">
+        Refer Code
+      </div>
+
+      <div
+        class="value"
+        id="refCode">
+
+        Loading...
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ================================
+       PAYMENT INFORMATION
+  ================================= -->
+
+  <div class="info-card">
+
+    <div class="section-title">
+      💳 Payment Details
+    </div>
+
+
+    <!-- QR CODE -->
+
+    <div class="detail">
+
+      <div class="label">
+        My QR Code
+      </div>
+
+      <div class="qrBox">
+
+        <img
+          id="qrImage"
+          class="qrImage"
+          alt="QR Code">
+
+        <input
+          id="qrFile"
+          class="qrInput"
+          type="file"
+          accept="image/*">
+
+      </div>
+
+    </div>
+
+
+    <!-- UPI -->
+
+    <div class="detail">
+
+      <div class="label">
+        UPI ID
+      </div>
+
+      <input
+        id="upiId"
+        class="input"
+        type="text"
+        placeholder="example@upi">
+
+    </div>
+
+
+    <!-- BANK NAME -->
+
+    <div class="detail">
+
+      <div class="label">
+        Bank Name
+      </div>
+
+      <input
+        id="bankName"
+        class="input"
+        type="text"
+        placeholder="Bank Name">
+
+    </div>
+
+
+    <!-- ACCOUNT HOLDER -->
+
+    <div class="detail">
+
+      <div class="label">
+        Account Holder Name
+      </div>
+
+      <input
+        id="accountHolder"
+        class="input"
+        type="text"
+        placeholder="Account Holder Name">
+
+    </div>
+
+
+    <!-- ACCOUNT NUMBER -->
+
+    <div class="detail">
+
+      <div class="label">
+        Account Number
+      </div>
+
+      <input
+        id="accountNumber"
+        class="input"
+        type="text"
+        inputmode="numeric"
+        placeholder="Account Number">
+
+    </div>
+
+
+    <!-- IFSC -->
+
+    <div class="detail">
+
+      <div class="label">
+        IFSC Code
+      </div>
+
+      <input
+        id="ifscCode"
+        class="input"
+        type="text"
+        placeholder="IFSC Code">
+
+    </div>
+
+  </div>
+
+
+  <!-- SAVE -->
+
+  <button
+    class="saveBtn"
+    onclick="saveDetails()">
+
+    Save / Update Details
+
+  </button>
+
+
+  <div
+    id="message"
+    class="message">
+  </div>
+
+
+</div>
+
+
+<script>
+
+// =====================================
+// SUPABASE
+// =====================================
+
+const SUPABASE_URL =
+"https://glhomrlwnwhevunfubog.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB";
+
+const client =
+supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+
+// =====================================
+// GET LOGGED-IN USER
+// =====================================
+
+let userId = null;
+
+const savedUser =
+localStorage.getItem("user");
+
+
+if(savedUser){
+
+  try{
+
+    const user =
+      JSON.parse(savedUser);
+
+    if(user && user.id){
+
+      userId = user.id;
+
+    }
+
+  }
+  catch(error){
+
+    console.log(
+      "User JSON error:",
+      error
+    );
+
+  }
+
+}
+
+
+// FALLBACK
+
+if(!userId){
+
+  userId =
+    localStorage.getItem("user_id");
+
+}
+
+
+// =====================================
+// LOAD PROFILE
+// =====================================
+
+async function loadProfile(){
+
+  if(!userId){
+
+    document.getElementById("userId").innerText =
+      "Login required";
+
+    return;
+
+  }
+
+
+  const {
+    data,
+    error
+  } = await client
+
+    .from("login")
+
+    .select(
+      "id,name,mobile,refer_code,qr_code,upi_id,bank_name,account_holder,account_number,ifsc_code"
+    )
+
+    .eq(
+      "id",
+      userId
+    )
+
+    .single();
+
+
+  if(error){
+
+    console.log(
+      "Profile loading error:",
+      error
+    );
+
+    document.getElementById("userId").innerText =
+      "Error";
+
+    return;
+
+  }
+
+
+  // ===================================
+  // SHOW BASIC DETAILS
+  // ===================================
+
+  document.getElementById("userId").innerText =
+    data.id ?? "-";
+
+  document.getElementById("userName").innerText =
+    data.name ?? "-";
+
+  document.getElementById("userMobile").innerText =
+    data.mobile ?? "-";
+
+  document.getElementById("refCode").innerText =
+    data.refer_code ?? "-";
+
+
+  // ===================================
+  // SHOW PAYMENT DETAILS
+  // ===================================
+
+  document.getElementById("upiId").value =
+    data.upi_id ?? "";
+
+  document.getElementById("bankName").value =
+    data.bank_name ?? "";
+
+  document.getElementById("accountHolder").value =
+    data.account_holder ?? "";
+
+  document.getElementById("accountNumber").value =
+    data.account_number ?? "";
+
+  document.getElementById("ifscCode").value =
+    data.ifsc_code ?? "";
+
+
+  // ===================================
+  // SHOW QR
+  // ===================================
+
+  if(data.qr_code){
+
+    document.getElementById("qrImage").src =
+      data.qr_code;
+
+    document.getElementById("qrImage").style.display =
+      "block";
+
+  }
+
+}
+
+
+// =====================================
+// SAVE DETAILS
+// =====================================
+
+async function saveDetails(){
+
+  if(!userId){
+
+    alert(
+      "Login required."
+    );
+
+    return;
+
+  }
+
+
+  const message =
+    document.getElementById("message");
+
+  message.innerText =
+    "Saving...";
+
+
+  // ===================================
+  // GET INPUT VALUES
+  // ===================================
+
+  const upiId =
+    document.getElementById("upiId")
+      .value
+      .trim();
+
+  const bankName =
+    document.getElementById("bankName")
+      .value
+      .trim();
+
+  const accountHolder =
+    document.getElementById("accountHolder")
+      .value
+      .trim();
+
+  const accountNumber =
+    document.getElementById("accountNumber")
+      .value
+      .trim();
+
+  const ifscCode =
+    document.getElementById("ifscCode")
+      .value
+      .trim();
+
+
+  // ===================================
+  // QR FILE
+  // ===================================
+
+  const qrFile =
+    document.getElementById("qrFile")
+      .files[0];
+
+
+  let qrUrl = null;
+
+
+  // ===================================
+  // UPLOAD QR
+  // ===================================
+
+  if(qrFile){
+
+    const extension =
+      qrFile.name
+        .split(".")
+        .pop()
+        .toLowerCase();
+
+
+    const filePath =
+      userId +
+      "/qr." +
+      extension;
+
+
+    const {
+      error: uploadError
+    } = await client
+      .storage
+      .from("qr-codes")
+      .upload(
+        filePath,
+        qrFile,
+        {
+          upsert:true,
+          contentType:qrFile.type
+        }
+      );
+
+
+    if(uploadError){
+
+      console.log(
+        "QR upload error:",
+        uploadError
+      );
+
+      message.innerText =
+        "";
+
+      alert(
+        "QR upload nahi hua:\n" +
+        uploadError.message
+      );
+
+      return;
+
+    }
+
+
+    // =================================
+    // GET PUBLIC URL
+    // =================================
+
+    const {
+      data: publicData
+    } =
+      client
+        .storage
+        .from("qr-codes")
+        .getPublicUrl(filePath);
+
+
+    qrUrl =
+      publicData.publicUrl;
+
+
+    // SHOW IMMEDIATELY
+
+    document.getElementById("qrImage").src =
+      qrUrl;
+
+    document.getElementById("qrImage").style.display =
+      "block";
+
+  }
+
+
+  // ===================================
+  // DATABASE UPDATE
+  // ===================================
+
+  const updateData = {
+
+    upi_id:
+      upiId,
+
+    bank_name:
+      bankName,
+
+    account_holder:
+      accountHolder,
+
+    account_number:
+      accountNumber,
+
+    ifsc_code:
+      ifscCode
+
+  };
+
+
+  if(qrUrl){
+
+    updateData.qr_code =
+      qrUrl;
+
+  }
+
+
+  const {
+    error
+  } = await client
+
+    .from("login")
+
+    .update(updateData)
+
+    .eq(
+      "id",
+      userId
+    );
+
+
+  if(error){
+
+    console.log(
+      "Database update error:",
+      error
+    );
+
+    message.innerText =
+      "";
+
+    alert(
+      "Details save nahi hui:\n" +
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  message.innerText =
+    "Details successfully saved ✓";
+
+
+  document.getElementById("qrFile").value =
+    "";
+
+}
+
+
+// =====================================
+// START
+// =====================================
+
+loadProfile();
+
+</script>
+
+</body>
+
+</html>
+

@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Withdraw</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body{
+    font-family:Arial;
+    background:#f2f2f2;
+    padding:15px;
+    margin:0;
+}
+
+#userId{
+    position:fixed;
+    left:15px;
+    top:10px;
+    background:green;
+    color:#fff;
+    padding:8px 15px;
+    border-radius:20px;
+    font-weight:bold;
+    z-index:10;
+}
+
+#wallet{
+    position:fixed;
+    right:15px;
+    top:10px;
+    background:red;
+    color:#fff;
+    padding:8px 15px;
+    border-radius:20px;
+    font-weight:bold;
+    z-index:10;
+}
+
+.card{
+    background:#fff;
+    padding:20px;
+    border-radius:20px;
+    margin-top:60px;
+    margin-bottom:15px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+}
+
+h3{
+    margin-top:0;
+    text-align:center;
+}
+
+input{
+    width:100%;
+    box-sizing:border-box;
+    padding:13px;
+    margin-top:10px;
+    border-radius:10px;
+    border:1px solid #ccc;
+    font-size:16px;
+}
+
+.quick-title{
+    margin-top:18px;
+    font-weight:bold;
+    text-align:center;
+}
+
+.quick-row{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-top:12px;
+}
+
+.quick-btn{
+    padding:13px 5px;
+    border:none;
+    border-radius:12px;
+    background:#4facfe;
+    color:white;
+    font-weight:bold;
+    font-size:15px;
+    cursor:pointer;
+}
+
+.quick-btn:active{
+    transform:scale(.96);
+}
+
+.main-btn{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:15px;
+    background:#ff4d4d;
+    color:#fff;
+    font-weight:bold;
+    font-size:16px;
+    margin-top:15px;
+    cursor:pointer;
+}
+
+.history-card{
+    background:#fff;
+    padding:18px;
+    border-radius:20px;
+    margin-bottom:15px;
+    box-shadow:0 3px 12px rgba(0,0,0,.07);
+}
+
+.history-title{
+    font-size:20px;
+    font-weight:bold;
+    margin-bottom:15px;
+}
+
+.history-item{
+    border:1px solid #eee;
+    border-radius:14px;
+    padding:14px;
+    margin-bottom:10px;
+    background:#fafafa;
+}
+
+.history-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+}
+
+.history-amount{
+    font-size:18px;
+    font-weight:bold;
+}
+
+.status{
+    padding:6px 10px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:bold;
+}
+
+.pending{
+    background:#fff3cd;
+    color:#856404;
+}
+
+.clear{
+    background:#d4edda;
+    color:#155724;
+}
+
+.cancelled{
+    background:#f8d7da;
+    color:#721c24;
+}
+
+.history-date{
+    color:#777;
+    font-size:12px;
+    margin-top:8px;
+}
+
+.empty{
+    text-align:center;
+    color:#777;
+    padding:15px 0;
+}
+
+.closed{
+    text-align:center;
+}
+
+.closed h2{
+    margin-top:0;
+}
+</style>
+</head>
+
+<body>
+
+<div id="userId">ID: --</div>
+<div id="wallet">₹ 0</div>
+
+
+<!-- =========================
+     WITHDRAW FORM
+========================= -->
+
+<div class="card" id="withdrawBox">
+
+    <h3>Withdraw Request</h3>
+
+    <input
+        type="number"
+        id="amount"
+        placeholder="Enter Withdraw Amount"
+    >
+
+    <div class="quick-title">
+        Quick Amount
+    </div>
+
+    <div class="quick-row">
+
+    
+
+        <button class="quick-btn" onclick="setAmount(200)">
+            ₹200
+        </button>
+
+        <button class="quick-btn" onclick="setAmount(500)">
+            ₹500
+        </button>
+
+        <button class="quick-btn" onclick="setAmount(1000)">
+            ₹1000
+        </button>
+
+        <button class="quick-btn" onclick="setAmount(2000)">
+            ₹2000
+        </button>
+
+    </div>
+
+    <button class="main-btn" onclick="submitWithdraw()">
+        SUBMIT WITHDRAW
+    </button>
+
+</div>
+
+
+<!-- =========================
+     WITHDRAW HISTORY
+========================= -->
+
+<div class="history-card">
+
+    <div class="history-title">
+        Withdraw History
+    </div>
+
+    <div id="history">
+        Loading...
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================
+   SUPABASE
+========================= */
+
+const client = supabase.createClient(
+    "https://glhomrlwnwhevunfubog.supabase.co",
+    "sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB"
+);
+
+
+/* =========================
+   USER
+========================= */
+
+const user = JSON.parse(localStorage.getItem("user"));
+
+if(!user){
+    alert("User login nahi hai");
+}
+
+
+/* =========================
+   QUICK AMOUNT
+========================= */
+
+function setAmount(value){
+
+    document.getElementById("amount").value = value;
+
+}
+
+
+/* =========================
+   LOAD USER
+========================= */
+
+async function loadUser(){
+
+    if(!user) return;
+
+    const { data, error } = await client
+        .from("login")
+        .select("balance")
+        .eq("id", user.id)
+        .single();
+
+    if(error){
+
+        console.log(error);
+        return;
+
+    }
+
+    document.getElementById("wallet").innerText =
+        "₹ " + (data.balance || 0);
+
+    document.getElementById("userId").innerText =
+        "ID: " + user.id;
+}
+
+loadUser();
+
+
+/* =========================
+   SUBMIT WITHDRAW
+========================= */
+
+async function submitWithdraw(){
+
+    const amountInput =
+        document.getElementById("amount");
+
+    const amount =
+        Number(amountInput.value);
+
+
+    if(!amount){
+
+        alert("Withdraw amount daalo ❌");
+        return;
+
+    }
+
+
+    if(amount < 200){
+
+        alert("Minimum Withdraw ₹200 hai ❌");
+        return;
+
+    }
+
+
+    // Current balance check
+
+    const { data, error } = await client
+        .from("login")
+        .select("balance")
+        .eq("id", user.id)
+        .single();
+
+
+    if(error){
+
+        alert("Balance check nahi ho saka ❌");
+        console.log(error);
+        return;
+
+    }
+
+
+    const balance =
+        Number(data.balance || 0);
+
+
+    if(balance < amount){
+
+        alert("Balance kam hai ❌");
+        return;
+
+    }
+
+
+    // New balance
+
+    const newBalance =
+        balance - amount;
+
+
+    // Balance deduct
+
+    const { error:updateError } =
+        await client
+        .from("login")
+        .update({
+            balance:newBalance
+        })
+        .eq("id",user.id);
+
+
+    if(updateError){
+
+        alert("Balance update nahi hua ❌");
+        console.log(updateError);
+        return;
+
+    }
+
+
+    // Withdraw request
+
+    const { error:requestError } =
+        await client
+        .from("withdraw_requests")
+        .insert({
+
+            user_id:user.id,
+            mobile:user.mobile,
+            amount:amount,
+            status:"pending"
+
+        });
+
+
+    if(requestError){
+
+        alert("Withdraw request nahi bani ❌");
+        console.log(requestError);
+
+        // Balance rollback
+        await client
+            .from("login")
+            .update({
+                balance:balance
+            })
+            .eq("id",user.id);
+
+        return;
+
+    }
+
+
+    // Amount box clear
+
+    amountInput.value = "";
+
+
+    alert(
+        "Withdraw Request Sent ✅\n\n" +
+        "Aapki request Pending hai."
+    );
+
+
+    loadUser();
+    loadHistory();
+
+}
+
+
+/* =========================
+   WITHDRAW HISTORY
+========================= */
+
+async function loadHistory(){
+
+    const history =
+        document.getElementById("history");
+
+
+    const { data, error } = await client
+        .from("withdraw_requests")
+        .select("id,amount,status,created_at")
+        .eq("user_id",user.id)
+        .order("created_at",{ascending:false});
+
+
+    if(error){
+
+        console.log(error);
+
+        history.innerHTML =
+            `<div class="empty">
+                History load nahi hui
+            </div>`;
+
+        return;
+
+    }
+
+
+    if(!data || data.length === 0){
+
+        history.innerHTML =
+            `<div class="empty">
+                Abhi koi withdraw history nahi hai
+            </div>`;
+
+        return;
+
+    }
+
+
+    history.innerHTML = "";
+
+
+    data.forEach(item => {
+
+        let status =
+            String(item.status || "pending")
+            .toLowerCase();
+
+
+        let statusText = "Pending";
+        let statusClass = "pending";
+
+
+        if(
+            status === "clear" ||
+            status === "accepted" ||
+            status === "accept" ||
+            status === "approved"
+        ){
+
+            statusText = "Clear";
+            statusClass = "clear";
+
+        }
+
+
+        if(
+            status === "cancel" ||
+            status === "cancelled" ||
+            status === "canceled"
+        ){
+
+            statusText = "Cancelled";
+            statusClass = "cancelled";
+
+        }
+
+
+        let date = "";
+
+        if(item.created_at){
+
+            date =
+                new Date(item.created_at)
+                .toLocaleString("en-IN");
+
+        }
+
+
+        history.innerHTML += `
+
+            <div class="history-item">
+
+                <div class="history-top">
+
+                    <div class="history-amount">
+                        ₹ ${item.amount}
+                    </div>
+
+                    <div class="status ${statusClass}">
+                        ${statusText}
+                    </div>
+
+                </div>
+
+                <div class="history-date">
+                    ${date}
+                </div>
+
+            </div>
+
+        `;
+
+    });
+
+}
+
+
+loadHistory();
+
+
+/* =========================
+   AUTO REFRESH HISTORY
+========================= */
+
+setInterval(() => {
+
+    loadHistory();
+    loadUser();
+
+},5000);
+
+
+/* =========================
+   WITHDRAW TIMING
+   OFF: 12:00 AM
+   ON: 10:30 AM
+========================= */
+
+function checkWithdrawTime(){
+
+    const now = new Date();
+
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+
+    const currentMinutes =
+        hour * 60 + minute;
+
+
+    const offTime = 0;
+
+    
+        const onTime = 
+    10 * 60;
+
+    const withdrawBox =
+        document.getElementById("withdrawBox");
+
+
+    let message =
+        document.getElementById("withdrawClosed");
+
+
+    /* =========================
+       12:00 AM - 10:30 AM
+       WITHDRAW CLOSED
+    ========================= */
+
+    if(
+        currentMinutes >= offTime &&
+        currentMinutes < onTime
+    ){
+
+        withdrawBox.style.display = "none";
+
+
+        if(!message){
+
+            message =
+                document.createElement("div");
+
+            message.id =
+                "withdrawClosed";
+
+            message.className =
+                "card closed";
+
+
+            message.innerHTML = `
+
+                <h2>
+                    Withdraw Closed ⏰
+                </h2>
+
+                <p>
+                    Withdraw abhi band hai.
+                </p>
+
+                <p>
+                    Withdraw subah
+                    <b>10:00 AM</b>
+                    se dobara start hoga.
+                </p>
+
+            `;
+
+            withdrawBox
+                .parentNode
+                .insertBefore(
+                    message,
+                    withdrawBox
+                );
+
+        }
+
+    }
+
+
+    /* =========================
+       10:30 AM - 12:00 AM
+       WITHDRAW OPEN
+    ========================= */
+
+    else{
+
+        withdrawBox.style.display =
+            "block";
+
+
+        if(message){
+
+            message.remove();
+
+        }
+
+    }
+
+}
+
+
+checkWithdrawTime();
+
+setInterval(
+    checkWithdrawTime,
+    1000
+);
+
+</script>
+
+</body>
+</html>

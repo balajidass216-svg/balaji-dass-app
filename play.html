@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body{
+  font-family:Arial;
+  margin:0;
+  background:#f1f5f9;
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  padding:10px;
+  background:#fff;
+}
+
+.boxBtn{
+  display:flex;
+  gap:10px;
+  padding:10px;
+}
+
+.btn{
+  flex:1;
+  padding:12px;
+  border-radius:10px;
+  text-align:center;
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.typing{
+  background:#3b82f6;
+}
+
+.image{
+  background:#10b981;
+}
+
+.container{
+  padding:15px;
+}
+
+input,textarea{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  box-sizing:border-box;
+}
+
+.submit{
+  background:green;
+  color:#fff;
+  padding:12px;
+  margin-top:10px;
+  border-radius:10px;
+  text-align:center;
+  cursor:pointer;
+}
+
+.note{
+  background:#fff3cd;
+  padding:10px;
+  margin-top:15px;
+  border-radius:10px;
+  font-size:13px;
+}
+
+.hide{
+  display:none;
+}
+
+.preview{
+  margin-top:10px;
+  width:100%;
+  max-height:250px;
+  object-fit:contain;
+  border-radius:10px;
+  background:#eee;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div id="userId">ID: 0</div>
+  <div id="wallet">₹ 0</div>
+</div>
+
+<div class="boxBtn">
+
+  <div class="btn typing" onclick="showBox('typingBox')">
+    Typing Game
+  </div>
+
+  <div class="btn image" onclick="showBox('imageBox')">
+    Image Game
+  </div>
+
+</div>
+
+<div class="container">
+
+<!-- TYPING -->
+
+<div id="typingBox">
+
+<textarea
+  id="typingData"
+  placeholder="Enter your game"
+></textarea>
+
+<input
+  type="number"
+  id="typingAmount"
+  placeholder="Enter Total Amount"
+>
+
+<div class="submit" onclick="submitTyping()">
+  SUBMIT
+</div>
+
+</div>
+
+
+<!-- IMAGE -->
+
+<div id="imageBox" class="hide">
+
+<input
+  type="file"
+  id="imageInput"
+  accept="image/*"
+  onchange="previewImage()"
+>
+
+<img
+  id="preview"
+  class="preview hide"
+>
+
+<input
+  type="number"
+  id="imageAmount"
+  placeholder="Enter Total Amount"
+>
+
+<div class="submit" onclick="submitImage()">
+  SUBMIT
+</div>
+
+</div>
+
+
+<!-- NOTICE -->
+
+<div class="note">
+
+📢 नोटिस:<br><br>
+
+अपनी गेम साफ-साफ लिखें।<br><br>
+
+Typing में इस प्रकार लिखें: 01 02 03 (amount)<br><br>
+
+आप ₹ या ₹. जैसे चिन्ह का उपयोग कर सकते हैं।<br><br>
+
+Image में साफ पर्ची ही अपलोड करें।<br><br>
+
+कृपया टोटल सही रखें।<br>
+
+टोटल गलत होने पर ऊपर से हिसाब किया जाएगा।<br><br>
+
+जितने पैसे कम होंगे, उतने नीचे के नंबरों में पैसे कम कर दिए जाएंगे।
+
+</div>
+
+</div>
+
+
+<script>
+
+/* =========================
+   SUPABASE
+========================= */
+
+const SUPABASE_URL =
+"https://glhomrlwnwhevunfubog.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB";
+
+const client = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+
+/* =========================
+   LOGIN CHECK
+========================= */
+
+const savedUser = localStorage.getItem("user");
+
+if(!savedUser){
+
+  alert("Please login again");
+
+  window.location.href = "index.html";
+
+}
+
+
+/* =========================
+   USER DATA
+========================= */
+
+let user;
+
+try{
+
+  user = JSON.parse(savedUser);
+
+}catch(error){
+
+  localStorage.removeItem("user");
+
+  alert("Login session error");
+
+  window.location.href = "index.html";
+
+}
+
+
+/* =========================
+   CURRENT LOGIN ID
+   DIRECTLY FROM LOGIN TABLE
+========================= */
+
+let currentUserId = null;
+
+async function getCurrentUserId(){
+
+  try{
+
+    const { data, error } = await client
+      .from("login")
+      .select("id")
+      .eq("id", user.id)
+      .single();
+
+    if(error || !data){
+
+      console.error("LOGIN ID ERROR:", error);
+
+      alert("Login user not found");
+
+      return false;
+
+    }
+
+    currentUserId = Number(data.id);
+
+    document.getElementById("userId").innerText =
+      "ID: " + currentUserId;
+
+    return true;
+
+  }catch(error){
+
+    console.error(error);
+
+    alert("Login ID server error");
+
+    return false;
+
+  }
+
+}
+
+
+const market =
+localStorage.getItem("market") || "UNKNOWN";
+
+
+/* =========================
+   IMAGE PREVIEW
+========================= */
+
+function previewImage(){
+
+  const file =
+    document.getElementById("imageInput").files[0];
+
+  const preview =
+    document.getElementById("preview");
+
+
+  if(!file){
+
+    preview.src = "";
+    preview.classList.add("hide");
+
+    return;
+
+  }
+
+
+  if(!file.type.startsWith("image/")){
+
+    alert("Sirf image file upload karo");
+
+    document.getElementById("imageInput").value = "";
+
+    preview.src = "";
+    preview.classList.add("hide");
+
+    return;
+
+  }
+
+
+  preview.src =
+    URL.createObjectURL(file);
+
+  preview.classList.remove("hide");
+
+}
+
+
+/* =========================
+   WALLET LOAD
+========================= */
+
+async function loadWallet(){
+
+  try{
+
+    const { data, error } = await client
+      .from("login")
+      .select("balance")
+      .eq("id", currentUserId)
+      .single();
+
+
+    if(error){
+
+      console.error("WALLET ERROR:", error);
+
+      alert("Wallet load error: " + error.message);
+
+      return;
+
+    }
+
+
+    if(!data){
+
+      alert("User data not found");
+
+      return;
+
+    }
+
+
+    document.getElementById("wallet").innerText =
+      "₹ " + (data.balance || 0);
+
+    document.getElementById("userId").innerText =
+      "ID: " + currentUserId;
+
+
+  }catch(error){
+
+    console.error(error);
+
+    alert("Wallet server error");
+
+  }
+
+}
+
+
+/* =========================
+   SWITCH BOX
+========================= */
+
+function showBox(id){
+
+  document
+    .getElementById("typingBox")
+    .classList.add("hide");
+
+  document
+    .getElementById("imageBox")
+    .classList.add("hide");
+
+
+  document
+    .getElementById(id)
+    .classList.remove("hide");
+
+}
+
+
+/* =========================
+   TYPING GAME
+========================= */
+
+async function submitTyping(){
+
+  const text =
+    document.getElementById("typingData").value.trim();
+
+  const amount =
+    Number(
+      document.getElementById("typingAmount").value
+    );
+
+
+  if(!text){
+
+    alert("Game data enter karo");
+
+    return;
+
+  }
+
+
+  if(!amount || amount <= 0){
+
+    alert("Valid amount enter karo");
+
+    return;
+
+  }
+
+
+  try{
+
+    /* GET BALANCE */
+
+    const { data, error } = await client
+      .from("login")
+      .select("balance")
+      .eq("id", currentUserId)
+      .single();
+
+
+    if(error){
+
+      console.error(error);
+
+      alert("Balance check error: " + error.message);
+
+      return;
+
+    }
+
+
+    if(!data){
+
+      alert("User not found");
+
+      return;
+
+    }
+
+
+    const balance =
+      Number(data.balance) || 0;
+
+
+    if(balance < amount){
+
+      alert("Low balance");
+
+      return;
+
+    }
+
+
+    /* UPDATE BALANCE */
+
+    const { error: balanceError } =
+      await client
+        .from("login")
+        .update({
+          balance: balance - amount
+        })
+        .eq("id", currentUserId);
+
+
+    if(balanceError){
+
+      console.error(balanceError);
+
+      alert(
+        "Balance update error: " +
+        balanceError.message
+      );
+
+      return;
+
+    }
+
+
+    /* SAVE GAME */
+
+    const { error: insertError } =
+      await client
+        .from("typing_image")
+        .insert([{
+
+          user_id: currentUserId,
+
+          market: market,
+
+          data: text,
+
+          total: amount
+
+        }]);
+
+
+    if(insertError){
+
+      console.error(insertError);
+
+      alert(
+        "Game save error: " +
+        insertError.message
+      );
+
+      return;
+
+    }
+
+
+    alert("Done ✅");
+
+    location.reload();
+
+
+  }catch(error){
+
+    console.error(error);
+
+    alert("Server Error ❌");
+
+  }
+
+}
+
+
+/* =========================
+   IMAGE GAME
+========================= */
+
+async function submitImage(){
+
+  const file =
+    document.getElementById("imageInput").files[0];
+
+  const amount =
+    Number(
+      document.getElementById("imageAmount").value
+    );
+
+
+  if(!file){
+
+    alert("Image select karo");
+
+    return;
+
+  }
+
+
+  if(!amount || amount <= 0){
+
+    alert("Valid amount enter karo");
+
+    return;
+
+  }
+
+
+  if(!file.type.startsWith("image/")){
+
+    alert("Sirf image upload karo");
+
+    return;
+
+  }
+
+
+  try{
+
+    /* =====================
+       CHECK BALANCE FIRST
+    ===================== */
+
+    const {
+      data: userData,
+      error: balanceError
+    } = await client
+      .from("login")
+      .select("balance")
+      .eq("id", currentUserId)
+      .single();
+
+
+    if(balanceError){
+
+      console.error(balanceError);
+
+      alert(
+        "Balance check error: " +
+        balanceError.message
+      );
+
+      return;
+
+    }
+
+
+    if(!userData){
+
+      alert("User not found");
+
+      return;
+
+    }
+
+
+    const balance =
+      Number(userData.balance) || 0;
+
+
+    if(balance < amount){
+
+      alert("Low balance");
+
+      return;
+
+    }
+
+
+    /* =====================
+       FILE NAME
+    ===================== */
+
+    const fileName =
+      Date.now() + "_" + file.name;
+
+
+    /* =====================
+       UPLOAD IMAGE
+    ===================== */
+
+    const {
+      error: uploadError
+    } = await client.storage
+      .from("screenshots")
+      .upload(fileName, file);
+
+
+    if(uploadError){
+
+      console.error(uploadError);
+
+      alert(
+        "Image upload error: " +
+        uploadError.message
+      );
+
+      return;
+
+    }
+
+
+    /* =====================
+       PUBLIC URL
+    ===================== */
+
+    const {
+      data: publicData
+    } = client.storage
+      .from("screenshots")
+      .getPublicUrl(fileName);
+
+
+    if(!publicData || !publicData.publicUrl){
+
+      alert("Image URL create nahi hui");
+
+      return;
+
+    }
+
+
+    const imageUrl =
+      publicData.publicUrl;
+
+
+    /* =====================
+       UPDATE BALANCE
+    ===================== */
+
+    const {
+      error: updateError
+    } = await client
+      .from("login")
+      .update({
+        balance: balance - amount
+      })
+      .eq("id", currentUserId);
+
+
+    if(updateError){
+
+      console.error(updateError);
+
+      alert(
+        "Balance update error: " +
+        updateError.message
+      );
+
+      return;
+
+    }
+
+
+    /* =====================
+       SAVE IMAGE GAME
+    ===================== */
+
+    const {
+      error: insertError
+    } = await client
+      .from("typing_image")
+      .insert([{
+
+        user_id: currentUserId,
+
+        market: market,
+
+        data: imageUrl,
+
+        total: amount
+
+      }]);
+
+
+    if(insertError){
+
+      console.error(insertError);
+
+      alert(
+        "Game save error: " +
+        insertError.message
+      );
+
+      return;
+
+    }
+
+
+    alert("Done ✅");
+
+    location.reload();
+
+
+  }catch(error){
+
+    console.error(error);
+
+    alert("Server Error ❌");
+
+  }
+
+}
+
+
+/* =========================
+   START
+========================= */
+
+async function startPage(){
+
+  const ok = await getCurrentUserId();
+
+  if(!ok){
+
+    return;
+
+  }
+
+  await loadWallet();
+
+}
+
+
+startPage();
+
+</script>
+
+</body>
+</html>

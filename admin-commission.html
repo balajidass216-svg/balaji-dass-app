@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Admin Commission</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  padding:0;
+  font-family:Arial,sans-serif;
+  background:#f5f5f5;
+  color:#222;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.header{
+  background:linear-gradient(
+    135deg,
+    #ff9800,
+    #ff5722
+  );
+
+  color:white;
+
+  padding:18px 15px;
+
+  text-align:center;
+
+  font-size:21px;
+
+  font-weight:bold;
+
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.15);
+}
+
+
+/* =========================
+   CONTAINER
+========================= */
+
+.container{
+  width:100%;
+  max-width:750px;
+  margin:auto;
+  padding:12px;
+}
+
+
+/* =========================
+   SUMMARY
+========================= */
+
+.summary{
+  background:white;
+
+  border-radius:12px;
+
+  padding:15px;
+
+  margin-bottom:12px;
+
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.08);
+
+  display:flex;
+
+  justify-content:space-between;
+
+  gap:10px;
+
+  text-align:center;
+}
+
+.summary-box{
+  flex:1;
+}
+
+.summary-title{
+  font-size:12px;
+  color:#777;
+  margin-bottom:5px;
+}
+
+.summary-value{
+  font-size:18px;
+  font-weight:bold;
+  color:#e65100;
+}
+
+
+/* =========================
+   SEARCH
+========================= */
+
+.search-box{
+  background:white;
+
+  padding:10px;
+
+  border-radius:10px;
+
+  margin-bottom:12px;
+
+  box-shadow:
+    0 2px 7px rgba(0,0,0,0.08);
+}
+
+.search-box input{
+  width:100%;
+
+  padding:12px;
+
+  border:1px solid #ddd;
+
+  border-radius:8px;
+
+  outline:none;
+
+  font-size:14px;
+}
+
+.search-box input:focus{
+  border-color:#ff9800;
+}
+
+
+/* =========================
+   COMMISSION ROW
+========================= */
+
+.commission-row{
+
+  background:white;
+
+  border-radius:12px;
+
+  margin-bottom:10px;
+
+  padding:13px;
+
+  box-shadow:
+    0 2px 7px rgba(0,0,0,0.08);
+
+}
+
+
+/* =========================
+   TOP
+========================= */
+
+.row-top{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  gap:10px;
+
+  margin-bottom:8px;
+}
+
+.user-name{
+
+  font-size:16px;
+
+  font-weight:bold;
+
+  color:#222;
+}
+
+.mobile{
+
+  font-size:13px;
+
+  color:#666;
+
+  white-space:nowrap;
+}
+
+
+/* =========================
+   MARKET
+========================= */
+
+.market{
+
+  text-align:center;
+
+  font-size:16px;
+
+  font-weight:bold;
+
+  color:#333;
+
+  background:#fff3e0;
+
+  border-radius:8px;
+
+  padding:8px;
+
+  margin-bottom:10px;
+}
+
+
+/* =========================
+   INFO
+========================= */
+
+.info-row{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  gap:10px;
+
+  margin-bottom:8px;
+}
+
+.info-left{
+
+  font-size:13px;
+
+  color:#777;
+}
+
+.info-right{
+
+  font-size:14px;
+
+  font-weight:bold;
+}
+
+
+/* =========================
+   COMMISSION
+========================= */
+
+.commission{
+
+  font-size:17px;
+
+  font-weight:bold;
+
+  color:#e65100;
+}
+
+
+/* =========================
+   ACTION BUTTONS
+========================= */
+
+.actions{
+
+  display:flex;
+
+  gap:8px;
+
+  margin-top:10px;
+}
+
+.actions button{
+
+  flex:1;
+
+  border:none;
+
+  padding:10px;
+
+  border-radius:8px;
+
+  font-size:14px;
+
+  font-weight:bold;
+
+  cursor:pointer;
+}
+
+.accept-btn{
+
+  background:#2e7d32;
+
+  color:white;
+}
+
+.cancel-btn{
+
+  background:#c62828;
+
+  color:white;
+}
+
+.actions button:active{
+
+  transform:scale(.98);
+
+}
+
+
+/* =========================
+   DATE
+========================= */
+
+.date{
+
+  font-size:11px;
+
+  color:#999;
+
+  margin-top:8px;
+
+  text-align:right;
+}
+
+
+/* =========================
+   LOADING
+========================= */
+
+.loading{
+
+  text-align:center;
+
+  padding:30px 10px;
+
+  color:#777;
+
+  font-size:15px;
+}
+
+
+/* =========================
+   NO DATA
+========================= */
+
+.no-data{
+
+  background:white;
+
+  border-radius:10px;
+
+  padding:30px 15px;
+
+  text-align:center;
+
+  color:#777;
+
+  box-shadow:
+    0 2px 7px rgba(0,0,0,0.08);
+}
+
+
+/* =========================
+   ERROR
+========================= */
+
+.error{
+
+  background:#ffebee;
+
+  color:#c62828;
+
+  border-radius:10px;
+
+  padding:15px;
+
+  text-align:center;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================
+     HEADER
+========================= -->
+
+<div class="header">
+  Admin Commission
+</div>
+
+
+<!-- =========================
+     MAIN
+========================= -->
+
+<div class="container">
+
+
+  <!-- =========================
+       SUMMARY
+  ========================= -->
+
+  <div class="summary">
+
+
+    <div class="summary-box">
+
+      <div class="summary-title">
+        Total Records
+      </div>
+
+      <div
+        id="totalRecords"
+        class="summary-value"
+      >
+        0
+      </div>
+
+    </div>
+
+
+    <div class="summary-box">
+
+      <div class="summary-title">
+        Accepted
+      </div>
+
+      <div
+        id="totalCommission"
+        class="summary-value"
+      >
+        ₹0.00
+      </div>
+
+    </div>
+
+
+    <div class="summary-box">
+
+      <div class="summary-title">
+        Pending
+      </div>
+
+      <div
+        id="pendingCount"
+        class="summary-value"
+      >
+        ₹0.00
+      </div>
+
+    </div>
+
+
+  </div>
+
+
+  <!-- =========================
+       SEARCH
+  ========================= -->
+
+  <div class="search-box">
+
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search name, mobile, market, user ID..."
+    >
+
+  </div>
+
+
+  <!-- =========================
+       DATA
+  ========================= -->
+
+  <div
+    id="commissionContainer"
+  >
+
+    <div class="loading">
+      Loading...
+    </div>
+
+  </div>
+
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   SUPABASE
+===================================================== */
+
+const supabaseClient =
+  supabase.createClient(
+
+    "https://glhomrlwnwhevunfubog.supabase.co",
+
+    "sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB"
+
+  );
+
+
+/* =====================================================
+   ELEMENTS
+===================================================== */
+
+const container =
+  document.getElementById(
+    "commissionContainer"
+  );
+
+
+const searchInput =
+  document.getElementById(
+    "searchInput"
+  );
+
+
+const totalRecords =
+  document.getElementById(
+    "totalRecords"
+  );
+
+
+const totalCommission =
+  document.getElementById(
+    "totalCommission"
+  );
+
+
+const pendingCount =
+  document.getElementById(
+    "pendingCount"
+  );
+
+
+/* =====================================================
+   DATA
+===================================================== */
+
+let allCommissionData = [];
+
+let loginUsers = [];
+
+
+/* =====================================================
+   LOAD LOGIN USERS
+===================================================== */
+
+async function loadLoginUsers(){
+
+  const {
+
+    data,
+
+    error
+
+  } =
+    await supabaseClient
+
+      .from("login")
+
+      .select(
+        "id,user_id,name,mobile"
+      );
+
+
+  if(error){
+
+    console.log(
+      "Login users error:",
+      error
+    );
+
+    loginUsers = [];
+
+    return;
+
+  }
+
+
+  loginUsers =
+    data || [];
+
+}
+
+
+/* =====================================================
+   LOAD COMMISSION
+===================================================== */
+
+async function loadCommission(){
+
+  try{
+
+
+    container.innerHTML = `
+
+      <div class="loading">
+        Loading commission...
+      </div>
+
+    `;
+
+
+    /* LOAD USERS */
+
+    await loadLoginUsers();
+
+
+    /* LOAD COMMISSION */
+
+    const {
+
+      data,
+
+      error
+
+    } =
+      await supabaseClient
+
+        .from("commission_records")
+
+        .select(`
+
+          id,
+          user_id,
+          market,
+          total,
+          ref_by,
+          commission,
+          commission_amount,
+          commission_percent,
+          status,
+          history_id,
+          created_at
+
+        `)
+
+        .order(
+          "created_at",
+          {
+            ascending:false
+          }
+        );
+
+
+    if(error){
+
+      console.log(
+        "Commission error:",
+        error
+      );
+
+
+      container.innerHTML = `
+
+        <div class="error">
+
+          Commission data load nahi hua
+
+          <br><br>
+
+          ${escapeHTML(
+            error.message ||
+            "Unknown error"
+          )}
+
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    allCommissionData =
+      data || [];
+
+
+    updateSummary(
+      allCommissionData
+    );
+
+
+    renderCommission(
+      allCommissionData
+    );
+
+
+  }
+
+  catch(error){
+
+
+    console.log(
+      "Admin commission error:",
+      error
+    );
+
+
+    container.innerHTML = `
+
+      <div class="error">
+
+        Something went wrong
+
+      </div>
+
+    `;
+
+  }
+
+}
+
+
+/* =====================================================
+   FIND USER
+===================================================== */
+
+function findUser(userId){
+
+  const commissionUserId =
+    String(
+      userId ?? ""
+    );
+
+
+  return loginUsers.find(
+    item => {
+
+      const loginId =
+        String(
+          item.id ?? ""
+        );
+
+
+      const loginUserId =
+        String(
+          item.user_id ?? ""
+        );
+
+
+      return (
+
+        commissionUserId === loginId ||
+
+        commissionUserId === loginUserId
+
+      );
+
+    }
+
+  ) || null;
+
+}
+
+
+/* =====================================================
+   SUMMARY
+===================================================== */
+
+function updateSummary(data){
+
+  totalRecords.textContent =
+    data.length;
+
+
+  let acceptedTotal = 0;
+
+  let pendingTotal = 0;
+
+
+  data.forEach(
+    record => {
+
+
+      const status =
+        String(
+          record.status ||
+          "pending"
+        )
+        .toLowerCase();
+
+
+      const amount =
+        Number(
+          record.commission_amount ??
+          record.commission ??
+          0
+        );
+
+
+      if(
+        status === "accepted"
+      ){
+
+        if(
+          Number.isFinite(amount)
+        ){
+
+          acceptedTotal +=
+            amount;
+
+        }
+
+      }
+
+
+      if(
+        status === "pending"
+      ){
+
+        if(
+          Number.isFinite(amount)
+        ){
+
+          pendingTotal +=
+            amount;
+
+        }
+
+      }
+
+
+    }
+  );
+
+
+  totalCommission.textContent =
+    "₹" +
+    acceptedTotal.toFixed(2);
+
+
+  pendingCount.textContent =
+    "₹" +
+    pendingTotal.toFixed(2);
+
+}
+
+
+/* =====================================================
+   RENDER COMMISSION
+===================================================== */
+
+function renderCommission(data){
+
+
+  if(
+    !data ||
+    data.length === 0
+  ){
+
+    container.innerHTML = `
+
+      <div class="no-data">
+
+        No commission found
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  /* ===================================================
+     PENDING UPAR
+     PROCESSED NICHE
+  =================================================== */
+
+  const sortedData =
+    [...data].sort(
+      (a,b) => {
+
+
+        const statusA =
+          String(
+            a.status ||
+            "pending"
+          )
+          .toLowerCase();
+
+
+        const statusB =
+          String(
+            b.status ||
+            "pending"
+          )
+          .toLowerCase();
+
+
+        const pendingA =
+          statusA === "pending";
+
+
+        const pendingB =
+          statusB === "pending";
+
+
+        /* PENDING FIRST */
+
+        if(
+          pendingA &&
+          !pendingB
+        ){
+
+          return -1;
+
+        }
+
+
+        if(
+          !pendingA &&
+          pendingB
+        ){
+
+          return 1;
+
+        }
+
+
+        /* SAME STATUS
+           NEWEST FIRST */
+
+        return (
+
+          new Date(
+            b.created_at
+          ) -
+
+          new Date(
+            a.created_at
+          )
+
+        );
+
+      }
+    );
+
+
+  container.innerHTML = "";
+
+
+  sortedData.forEach(
+    record => {
+
+
+      const user =
+        findUser(
+          record.user_id
+        );
+
+
+      const userName =
+        user?.name ||
+        "User";
+
+
+      const mobile =
+        String(
+          user?.mobile ||
+          ""
+        );
+
+
+      let lastFour =
+        mobile.slice(-4);
+
+
+      if(
+        lastFour.length < 4
+      ){
+
+        lastFour =
+          "----";
+
+      }
+
+
+      const maskedMobile =
+        "****" +
+        lastFour;
+
+
+      const market =
+        record.market ||
+        "-";
+
+
+      const total =
+        Number(
+          record.total ||
+          0
+        );
+
+
+      const commissionValue =
+        Number(
+          record.commission_amount ??
+          record.commission ??
+          0
+        );
+
+
+      const status =
+        String(
+          record.status ||
+          "pending"
+        )
+        .toLowerCase();
+
+
+      const createdAt =
+        record.created_at
+
+          ? new Date(
+              record.created_at
+            )
+            .toLocaleString(
+              "en-IN"
+            )
+
+          : "-";
+
+
+      const row =
+        document.createElement(
+          "div"
+        );
+
+
+      row.className =
+        "commission-row";
+
+
+      /* =================================================
+         PENDING RECORD
+      ================================================= */
+
+      if(
+        status === "pending"
+      ){
+
+
+        row.innerHTML = `
+
+          <div class="row-top">
+
+            <div class="user-name">
+
+              ${escapeHTML(
+                userName
+              )}
+
+            </div>
+
+
+            <div class="mobile">
+
+              ${escapeHTML(
+                maskedMobile
+              )}
+
+            </div>
+
+          </div>
+
+
+          <div class="market">
+
+            ${escapeHTML(
+              market
+            )}
+
+          </div>
+
+
+          <div class="info-row">
+
+            <div class="info-left">
+              Total
+            </div>
+
+            <div class="info-right">
+
+              ₹${total.toFixed(2)}
+
+            </div>
+
+          </div>
+
+
+          <div class="info-row">
+
+            <div class="info-left">
+              Commission
+            </div>
+
+            <div class="commission">
+
+              ₹${commissionValue.toFixed(2)}
+
+            </div>
+
+          </div>
+
+
+          <div class="actions">
+
+
+            <button
+              class="accept-btn"
+              onclick="updateStatus(
+                ${record.id},
+                'accepted'
+              )"
+            >
+
+              Accept
+
+            </button>
+
+
+            <button
+              class="cancel-btn"
+              onclick="updateStatus(
+                ${record.id},
+                'cancelled'
+              )"
+            >
+
+              Cancel
+
+            </button>
+
+
+          </div>
+
+
+          <div class="date">
+
+            ${escapeHTML(
+              createdAt
+            )}
+
+          </div>
+
+        `;
+
+      }
+
+
+      /* =================================================
+         ACCEPTED / CANCELLED
+         NO STATUS
+         NO BUTTON
+         ONLY HISTORY
+      ================================================= */
+
+      else{
+
+
+        row.innerHTML = `
+
+          <div class="row-top">
+
+            <div class="user-name">
+
+              ${escapeHTML(
+                userName
+              )}
+
+            </div>
+
+
+            <div class="mobile">
+
+              ${escapeHTML(
+                maskedMobile
+              )}
+
+            </div>
+
+          </div>
+
+
+          <div class="market">
+
+            ${escapeHTML(
+              market
+            )}
+
+          </div>
+
+
+          <div class="info-row">
+
+            <div class="info-left">
+              Total
+            </div>
+
+            <div class="info-right">
+
+              ₹${total.toFixed(2)}
+
+            </div>
+
+          </div>
+
+
+          <div class="info-row">
+
+            <div class="info-left">
+              Commission
+            </div>
+
+            <div class="commission">
+
+              ₹${commissionValue.toFixed(2)}
+
+            </div>
+
+          </div>
+
+
+          <div class="date">
+
+            ${escapeHTML(
+              createdAt
+            )}
+
+          </div>
+
+        `;
+
+      }
+
+
+      container.appendChild(
+        row
+      );
+
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   UPDATE STATUS
+===================================================== */
+
+async function updateStatus(
+  recordId,
+  newStatus
+){
+
+  const confirmText =
+    newStatus === "accepted"
+
+      ? "Commission accept karni hai?"
+
+      : "Commission cancel karni hai?";
+
+
+  if(
+    !confirm(
+      confirmText
+    )
+  ){
+
+    return;
+
+  }
+
+
+  try{
+
+
+    /* =================================================
+       PEHLE CHECK
+       KYA RECORD ABHI PENDING HAI?
+    ================================================= */
+
+    const {
+
+      data: currentRecord,
+
+      error: checkError
+
+    } =
+      await supabaseClient
+
+        .from(
+          "commission_records"
+        )
+
+        .select(
+          "id,status"
+        )
+
+        .eq(
+          "id",
+          recordId
+        )
+
+        .maybeSingle();
+
+
+    if(checkError){
+
+      alert(
+        "Record check nahi hua:\n" +
+        checkError.message
+      );
+
+      return;
+
+    }
+
+
+    if(
+      !currentRecord
+    ){
+
+      alert(
+        "Record nahi mila."
+      );
+
+      return;
+
+    }
+
+
+    /* =================================================
+       AGAR ALREADY PROCESS HO CHUKA HAI
+    ================================================= */
+
+    if(
+      String(
+        currentRecord.status ||
+        "pending"
+      )
+      .toLowerCase() !==
+      "pending"
+    ){
+
+      alert(
+        "Ye commission already process ho chuki hai."
+      );
+
+      await loadCommission();
+
+      return;
+
+    }
+
+
+    /* =================================================
+       STATUS UPDATE
+    ================================================= */
+
+    const {
+
+      error
+
+    } =
+      await supabaseClient
+
+        .from(
+          "commission_records"
+        )
+
+        .update({
+
+          status:
+            newStatus
+
+        })
+
+        .eq(
+          "id",
+          recordId
+        )
+
+        .eq(
+          "status",
+          "pending"
+        );
+
+
+    if(error){
+
+      console.log(
+        "Status update error:",
+        error
+      );
+
+
+      alert(
+        "Status update nahi hua:\n" +
+        error.message
+      );
+
+      return;
+
+    }
+
+
+    /* =================================================
+       REFRESH
+       ACCEPT/CANCEL KIYA RECORD NICHE CHALA JAYEGA
+    ================================================= */
+
+    await loadCommission();
+
+
+  }
+
+  catch(error){
+
+    console.log(
+      "Update status error:",
+      error
+    );
+
+
+    alert(
+      "Something went wrong"
+    );
+
+  }
+
+}
+
+
+/* =====================================================
+   SEARCH
+===================================================== */
+
+searchInput.addEventListener(
+  "input",
+  function(){
+
+
+    const search =
+      this.value
+        .trim()
+        .toLowerCase();
+
+
+    if(
+      !search
+    ){
+
+      renderCommission(
+        allCommissionData
+      );
+
+      return;
+
+    }
+
+
+    const filtered =
+      allCommissionData.filter(
+        record => {
+
+
+          const user =
+            findUser(
+              record.user_id
+            );
+
+
+          const name =
+            String(
+              user?.name ||
+              ""
+            )
+            .toLowerCase();
+
+
+          const mobile =
+            String(
+              user?.mobile ||
+              ""
+            )
+            .toLowerCase();
+
+
+          const market =
+            String(
+              record.market ||
+              ""
+            )
+            .toLowerCase();
+
+
+          const userId =
+            String(
+              record.user_id ||
+              ""
+            )
+            .toLowerCase();
+
+
+          const refBy =
+            String(
+              record.ref_by ||
+              ""
+            )
+            .toLowerCase();
+
+
+          return (
+
+            name.includes(
+              search
+            ) ||
+
+            mobile.includes(
+              search
+            ) ||
+
+            market.includes(
+              search
+            ) ||
+
+            userId.includes(
+              search
+            ) ||
+
+            refBy.includes(
+              search
+            )
+
+          );
+
+
+        }
+      );
+
+
+    renderCommission(
+      filtered
+    );
+
+
+  }
+);
+
+
+/* =====================================================
+   HTML SAFE
+===================================================== */
+
+function escapeHTML(
+  value
+){
+
+  return String(
+    value
+  )
+
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+
+    .replace(
+      /</g,
+      "&lt;"
+    )
+
+    .replace(
+      />/g,
+      "&gt;"
+    )
+
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
+}
+
+
+/* =====================================================
+   START
+===================================================== */
+
+loadCommission();
+
+
+/* =====================================================
+   AUTO REFRESH
+===================================================== */
+
+setInterval(
+
+  loadCommission,
+
+  60000
+
+);
+
+</script>
+
+
+</body>
+
+</html>

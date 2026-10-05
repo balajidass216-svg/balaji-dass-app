@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Delete Wining</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Arial,sans-serif;
+    background:#f4f6f9;
+    color:#222;
+}
+
+/* ================= HEADER ================= */
+
+.header{
+    background:linear-gradient(
+        135deg,
+        #111827,
+        #1f2937
+    );
+
+    color:white;
+
+    padding:18px;
+
+    text-align:center;
+
+    font-size:22px;
+
+    font-weight:bold;
+}
+
+/* ================= CONTAINER ================= */
+
+.container{
+    max-width:1100px;
+    margin:auto;
+    padding:18px;
+}
+
+/* ================= FILTER ================= */
+
+.filter-box{
+    background:white;
+
+    padding:18px;
+
+    border-radius:14px;
+
+    box-shadow:
+        0 4px 15px rgba(0,0,0,.08);
+
+    margin-bottom:18px;
+}
+
+.filter-grid{
+    display:grid;
+
+    grid-template-columns:
+        1fr 1fr auto;
+
+    gap:12px;
+}
+
+.field label{
+    display:block;
+
+    font-size:13px;
+
+    font-weight:bold;
+
+    margin-bottom:6px;
+
+    color:#555;
+}
+
+.field select{
+    width:100%;
+
+    padding:12px;
+
+    border:1px solid #ddd;
+
+    border-radius:9px;
+
+    outline:none;
+
+    font-size:14px;
+
+    background:white;
+}
+
+.field select:focus{
+    border-color:#2563eb;
+}
+
+/* ================= SUMMARY ================= */
+
+.summary{
+    display:grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap:12px;
+
+    margin-bottom:18px;
+}
+
+.summary-box{
+    background:white;
+
+    padding:16px;
+
+    border-radius:12px;
+
+    text-align:center;
+
+    box-shadow:
+        0 3px 12px rgba(0,0,0,.07);
+}
+
+.summary-title{
+    font-size:12px;
+
+    color:#777;
+
+    font-weight:bold;
+
+    margin-bottom:6px;
+}
+
+.summary-value{
+    font-size:23px;
+
+    font-weight:bold;
+}
+
+/* ================= LIST ================= */
+
+.wining-list{
+    display:flex;
+
+    flex-direction:column;
+
+    gap:12px;
+}
+
+/* ================= CARD ================= */
+
+.wining-card{
+    background:white;
+
+    border-radius:14px;
+
+    padding:16px;
+
+    box-shadow:
+        0 3px 12px rgba(0,0,0,.08);
+
+    border-left:5px solid #dc2626;
+}
+
+.card-top{
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:10px;
+
+    margin-bottom:12px;
+}
+
+.market-name{
+    font-size:18px;
+
+    font-weight:bold;
+}
+
+.status{
+    padding:5px 10px;
+
+    border-radius:20px;
+
+    font-size:11px;
+
+    font-weight:bold;
+}
+
+.status.pending{
+    background:#fff7ed;
+
+    color:#c2410c;
+}
+
+.status.accept{
+    background:#dcfce7;
+
+    color:#15803d;
+}
+
+.status.cancel{
+    background:#fee2e2;
+
+    color:#b91c1c;
+}
+
+/* ================= INFO ================= */
+
+.info-grid{
+    display:grid;
+
+    grid-template-columns:
+        repeat(7,1fr);
+
+    gap:10px;
+
+    margin-bottom:14px;
+}
+
+.info-item{
+    background:#f8fafc;
+
+    padding:10px;
+
+    border-radius:9px;
+
+    min-width:0;
+}
+
+.info-label{
+    font-size:10px;
+
+    color:#777;
+
+    margin-bottom:3px;
+}
+
+.info-value{
+    font-size:14px;
+
+    font-weight:bold;
+
+    overflow-wrap:anywhere;
+}
+
+.winning-amount{
+    color:#15803d;
+
+    font-size:16px;
+}
+
+/* ================= DELETE BUTTON ================= */
+
+.delete-btn{
+    width:100%;
+
+    border:none;
+
+    padding:11px 15px;
+
+    border-radius:8px;
+
+    background:#dc2626;
+
+    color:white;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    font-size:14px;
+}
+
+.delete-btn:hover{
+    background:#b91c1c;
+}
+
+/* ================= EMPTY ================= */
+
+.empty{
+    background:white;
+
+    border-radius:14px;
+
+    padding:35px;
+
+    text-align:center;
+
+    color:#777;
+
+    box-shadow:
+        0 3px 12px rgba(0,0,0,.07);
+}
+
+/* ================= MOBILE ================= */
+
+@media(max-width:800px){
+
+    .filter-grid{
+        grid-template-columns:
+            1fr 1fr;
+    }
+
+    .summary{
+        grid-template-columns:
+            repeat(3,1fr);
+    }
+
+    .info-grid{
+        grid-template-columns:
+            repeat(3,1fr);
+    }
+
+}
+
+@media(max-width:500px){
+
+    .container{
+        padding:12px;
+    }
+
+    .filter-grid{
+        grid-template-columns:1fr;
+    }
+
+    .summary{
+        grid-template-columns:
+            1fr 1fr;
+    }
+
+    .summary-box:last-child{
+        grid-column:span 2;
+    }
+
+    .info-grid{
+        grid-template-columns:
+            repeat(2,1fr);
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+<div class="header">
+    🗑️ Delete Wining
+</div>
+
+
+<div class="container">
+
+
+    <!-- ================= FILTER ================= -->
+
+    <div class="filter-box">
+
+        <div class="filter-grid">
+
+
+            <div class="field">
+
+                <label>
+                    Date
+                </label>
+
+                <select id="dateSelect">
+
+                    <option value="">
+                        Select Date
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Market
+                </label>
+
+                <select id="marketSelect">
+
+                    <option value="">
+                        Select Market
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div></div>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= SUMMARY ================= -->
+
+    <div class="summary">
+
+
+        <div class="summary-box">
+
+            <div class="summary-title">
+                TOTAL ROW
+            </div>
+
+            <div
+                id="totalCount"
+                class="summary-value">
+                0
+            </div>
+
+        </div>
+
+
+        <div class="summary-box">
+
+            <div class="summary-title">
+                PENDING
+            </div>
+
+            <div
+                id="pendingCount"
+                class="summary-value">
+                0
+            </div>
+
+        </div>
+
+
+        <div class="summary-box">
+
+            <div class="summary-title">
+                TOTAL WINING
+            </div>
+
+            <div
+                id="totalAmount"
+                class="summary-value">
+                ₹0
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ================= LIST ================= -->
+
+    <div
+        id="winingList"
+        class="wining-list">
+
+        <div class="empty">
+            Date aur Market select karein.
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+/* ================= SUPABASE ================= */
+
+const supabaseClient =
+    supabase.createClient(
+
+        "https://glhomrlwnwhevunfubog.supabase.co",
+
+        "sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB"
+
+    );
+
+
+/* ================= GLOBAL ================= */
+
+let allWining = [];
+
+let allHistory = [];
+
+
+/* ================= START ================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    async function(){
+
+        await loadDates();
+
+        await loadMarkets();
+
+        await loadWining();
+
+    }
+);
+
+
+/* ================= LOAD DATES ================= */
+
+async function loadDates(){
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+
+        .from("history")
+
+        .select("typing")
+
+        .not(
+            "typing",
+            "is",
+            null
+        );
+
+
+    if(error){
+
+        console.error(error);
+
+        return;
+
+    }
+
+
+    const dates = [
+        ...new Set(
+
+            (data || [])
+
+            .map(row => row.typing)
+
+            .filter(Boolean)
+
+        )
+    ].sort().reverse();
+
+
+    const select =
+        document.getElementById(
+            "dateSelect"
+        );
+
+
+    select.innerHTML =
+        `<option value="">
+            Select Date
+        </option>`;
+
+
+    dates.forEach(
+        date => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value = date;
+
+            option.textContent =
+                formatDate(date);
+
+            select.appendChild(
+                option
+            );
+
+        }
+    );
+
+}
+
+
+/* ================= LOAD MARKETS ================= */
+
+async function loadMarkets(){
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+
+        .from("history")
+
+        .select("market")
+
+        .not(
+            "market",
+            "is",
+            null
+        );
+
+
+    if(error){
+
+        console.error(error);
+
+        return;
+
+    }
+
+
+    const markets = [
+        ...new Set(
+
+            (data || [])
+
+            .map(row => row.market)
+
+            .filter(Boolean)
+
+        )
+    ].sort();
+
+
+    const select =
+        document.getElementById(
+            "marketSelect"
+        );
+
+
+    select.innerHTML =
+        `<option value="">
+            Select Market
+        </option>`;
+
+
+    markets.forEach(
+        market => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value = market;
+
+            option.textContent = market;
+
+            select.appendChild(
+                option
+            );
+
+        }
+    );
+
+}
+
+
+/* ================= LOAD WINING ================= */
+
+async function loadWining(){
+
+    const {
+        data:winingData,
+        error
+    } = await supabaseClient
+
+        .from("wining")
+
+        .select("*")
+
+        .order(
+            "id",
+            {
+                ascending:false
+            }
+        );
+
+
+    if(error){
+
+        console.error(error);
+
+        document.getElementById(
+            "winingList"
+        ).innerHTML =
+
+            `<div class="empty">
+                Wining load error:<br>
+                ${escapeHtml(
+                    error.message
+                )}
+            </div>`;
+
+        return;
+
+    }
+
+
+    allWining =
+        winingData || [];
+
+
+    /* ================= HISTORY ================= */
+
+    const historyIds =
+        [
+            ...new Set(
+
+                allWining
+
+                .map(
+                    row =>
+                        row.history_id
+                )
+
+                .filter(
+                    id =>
+                        id != null
+                )
+
+            )
+        ];
+
+
+    allHistory = [];
+
+
+    if(
+        historyIds.length > 0
+    ){
+
+        const {
+            data:historyData,
+            error:historyError
+        } =
+            await supabaseClient
+
+            .from("history")
+
+            .select(
+                "id,market,typing,created_at"
+            )
+
+            .in(
+                "id",
+                historyIds
+            );
+
+
+        if(historyError){
+
+            console.error(
+                historyError
+            );
+
+        }else{
+
+            allHistory =
+                historyData || [];
+
+        }
+
+    }
+
+
+    renderWining();
+
+}
+
+
+/* ================= RENDER ================= */
+
+function renderWining(){
+
+    const date =
+        document.getElementById(
+            "dateSelect"
+        ).value;
+
+
+    const market =
+        document.getElementById(
+            "marketSelect"
+        ).value;
+
+
+    let rows =
+        allWining.map(
+            row => {
+
+                const history =
+                    allHistory.find(
+                        h =>
+                            String(h.id) ===
+                            String(
+                                row.history_id
+                            )
+                    );
+
+
+                return {
+
+                    ...row,
+
+                    displayMarket:
+                        row.market ||
+                        history?.market ||
+                        "",
+
+                    displayDate:
+                        history?.typing ||
+                        (
+                            row.created_at
+                            ? getLocalDate(
+                                row.created_at
+                            )
+                            : ""
+                        )
+
+                };
+
+            }
+        );
+
+
+    /* ================= DATE FILTER ================= */
+
+    if(date){
+
+        rows =
+            rows.filter(
+                row =>
+                    row.displayDate ===
+                    date
+            );
+
+    }
+
+
+    /* ================= MARKET FILTER ================= */
+
+    if(market){
+
+        rows =
+            rows.filter(
+                row =>
+                    String(
+                        row.displayMarket
+                    ).toLowerCase() ===
+                    String(
+                        market
+                    ).toLowerCase()
+            );
+
+    }
+
+
+    /* ================= SUMMARY ================= */
+
+    const pending =
+        rows.filter(
+            row =>
+                row.status ===
+                "pending"
+        );
+
+
+    const totalAmount =
+        rows.reduce(
+            (sum,row) =>
+                sum +
+                Number(
+                    row.amount || 0
+                ),
+            0
+        );
+
+
+    document.getElementById(
+        "totalCount"
+    ).textContent =
+        rows.length;
+
+
+    document.getElementById(
+        "pendingCount"
+    ).textContent =
+        pending.length;
+
+
+    document.getElementById(
+        "totalAmount"
+    ).textContent =
+        "₹" +
+        totalAmount.toLocaleString(
+            "en-IN"
+        );
+
+
+    /* ================= EMPTY ================= */
+
+    const list =
+        document.getElementById(
+            "winingList"
+        );
+
+
+    if(rows.length === 0){
+
+        list.innerHTML =
+            `<div class="empty">
+                Is date aur market ke liye
+                koi wining row nahi mili.
+            </div>`;
+
+        return;
+
+    }
+
+
+    /* ================= RENDER ================= */
+
+    list.innerHTML =
+        rows
+        .map(
+            row =>
+                renderCard(row)
+        )
+        .join("");
+
+}
+
+
+/* ================= CARD ================= */
+
+function renderCard(row){
+
+    const status =
+        String(
+            row.status ||
+            "pending"
+        ).toLowerCase();
+
+
+    let statusHtml;
+
+
+    if(
+        status ===
+        "accepted"
+    ){
+
+        statusHtml =
+            `<span class="status accept">
+                ACCEPT
+            </span>`;
+
+    }else if(
+        status ===
+        "cancelled"
+    ){
+
+        statusHtml =
+            `<span class="status cancel">
+                CANCEL
+            </span>`;
+
+    }else{
+
+        statusHtml =
+            `<span class="status pending">
+                PENDING
+            </span>`;
+
+    }
+
+
+    return `
+
+        <div class="wining-card">
+
+            <div class="card-top">
+
+                <div class="market-name">
+
+                    ${escapeHtml(
+                        row.displayMarket ||
+                        "-"
+                    )}
+
+                </div>
+
+                ${statusHtml}
+
+            </div>
+
+
+            <div class="info-grid">
+
+
+                <div class="info-item">
+
+                    <div class="info-label">
+                        USER ID
+                    </div>
+
+                    <div class="info-value">
+                        ${escapeHtml(
+                            String(
+                                row.user_id ||
+                                "-"
+                            )
+                        )}
+                    </div>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <div class="info-label">
+                        HISTORY ID
+                    </div>
+
+                    <div class="info-value">
+                        ${escapeHtml(
+                            String(
+                                row.history_id ||
+                                "-"
+                            )
+                        )}
+                    </div>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <div class="info-label">
+                        NUMBER
+                    </div>
+
+                    <div class="info-value">
+                        ${escapeHtml(
+                            String(
+                                row.number ||
+                                "-"
+                            )
+                        )}
+                    </div>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <div class="info-label">
+                        BET
+                    </div>
+
+                    <div class="info-value">
+                        ₹${Number(
+                            row.bet_amount ||
+                            0
+                        ).toLocaleString(
+                            "en-IN"
+                        )}
+                    </div>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <div class="info-label">
+                        GAME
+                    </div>
+
+                    <div class="info-value">
+                        ${escapeHtml(
+                            String(
+                                row.game_type ||
+                                "-"
+                            )
+                        )}
+                    </div>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <div class="info-label">
+                        WINNING
+                    </div>
+
+                    <div class="info-value winning-amount">
+                        ₹${Number(
+                            row.amount ||
+                            0
+                        ).toLocaleString(
+                            "en-IN"
+                        )}
+                    </div>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <div class="info-label">
+                        ROW ID
+                    </div>
+
+                    <div class="info-value">
+                        ${escapeHtml(
+                            String(
+                                row.id ||
+                                "-"
+                            )
+                        )}
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            <button
+                class="delete-btn"
+                onclick="deleteWining(${row.id})">
+
+                🗑️ DELETE THIS ROW
+
+            </button>
+
+
+        </div>
+
+    `;
+
+}
+
+
+/* ================= DELETE ================= */
+
+async function deleteWining(id){
+
+    const row =
+        allWining.find(
+            item =>
+                Number(item.id) ===
+                Number(id)
+        );
+
+
+    if(!row){
+
+        alert(
+            "Wining row nahi mili."
+        );
+
+        return;
+
+    }
+
+
+    const confirmDelete =
+        confirm(
+
+            "WARNING!\n\n" +
+
+            "Market: " +
+            (
+                row.market ||
+                "-"
+            ) +
+
+            "\nNumber: " +
+            (
+                row.number ||
+                "-"
+            ) +
+
+            "\nWinning: ₹" +
+            Number(
+                row.amount || 0
+            ).toLocaleString(
+                "en-IN"
+            ) +
+
+            "\n\nKya is wining row ko DELETE karna hai?"
+
+        );
+
+
+    if(!confirmDelete){
+
+        return;
+
+    }
+
+
+    const {
+        error
+    } =
+        await supabaseClient
+
+        .from("wining")
+
+        .delete()
+
+        .eq(
+            "id",
+            id
+        );
+
+
+    if(error){
+
+        console.error(error);
+
+        alert(
+            "Delete error:\n" +
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    alert(
+        "Wining row DELETE ho gayi."
+    );
+
+
+    await loadWining();
+
+}
+
+
+/* ================= DATE CHANGE ================= */
+
+document
+.getElementById(
+    "dateSelect"
+)
+.addEventListener(
+    "change",
+    renderWining
+);
+
+
+/* ================= MARKET CHANGE ================= */
+
+document
+.getElementById(
+    "marketSelect"
+)
+.addEventListener(
+    "change",
+    renderWining
+);
+
+
+/* ================= DATE ================= */
+
+function getLocalDate(
+    dateString
+){
+
+    const date =
+        new Date(
+            dateString
+        );
+
+
+    if(
+        isNaN(
+            date.getTime()
+        )
+    ){
+
+        return "";
+
+    }
+
+
+    const year =
+        date.getFullYear();
+
+
+    const month =
+        String(
+            date.getMonth() + 1
+        ).padStart(
+            2,
+            "0"
+        );
+
+
+    const day =
+        String(
+            date.getDate()
+        ).padStart(
+            2,
+            "0"
+        );
+
+
+    return (
+        year +
+        "-" +
+        month +
+        "-" +
+        day
+    );
+
+}
+
+
+/* ================= FORMAT DATE ================= */
+
+function formatDate(
+    dateString
+){
+
+    const parts =
+        String(
+            dateString
+        ).split("-");
+
+
+    if(
+        parts.length !== 3
+    ){
+
+        return dateString;
+
+    }
+
+
+    return (
+        parts[2] +
+        "-" +
+        parts[1] +
+        "-" +
+        parts[0]
+    );
+
+}
+
+
+/* ================= ESCAPE ================= */
+
+function escapeHtml(
+    value
+){
+
+    return String(
+        value ?? ""
+    )
+
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+
+    .replace(
+        /</g,
+        "&lt;"
+    )
+
+    .replace(
+        />/g,
+        "&gt;"
+    )
+
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+
+    .replace(
+        /'/g,
+        "&#039;"
+    );
+
+}
+
+</script>
+
+</body>
+
+</html>

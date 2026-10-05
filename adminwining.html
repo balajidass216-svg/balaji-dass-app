@@ -1,0 +1,2612 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Admin Wining</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Arial,sans-serif;
+    background:#f3f5f9;
+    color:#222;
+}
+
+/* ================= HEADER ================= */
+
+.header{
+    background:linear-gradient(135deg,#111827,#273449);
+    color:white;
+    padding:18px 15px;
+    text-align:center;
+    box-shadow:0 3px 12px rgba(0,0,0,.15);
+}
+
+.header h1{
+    font-size:23px;
+}
+
+.header p{
+    margin-top:5px;
+    font-size:13px;
+    opacity:.8;
+}
+
+
+/* ================= CONTAINER ================= */
+
+.container{
+    max-width:1050px;
+    margin:auto;
+    padding:15px;
+}
+
+
+/* ================= FILTER ================= */
+
+.filter-box{
+    background:white;
+    border-radius:15px;
+    padding:16px;
+    box-shadow:0 3px 15px rgba(0,0,0,.07);
+    margin-bottom:15px;
+}
+
+.filter-title{
+    font-size:17px;
+    font-weight:bold;
+    margin-bottom:13px;
+}
+
+.filter-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.field label{
+    display:block;
+    font-size:12px;
+    font-weight:bold;
+    color:#666;
+    margin-bottom:6px;
+}
+
+select,
+input{
+    width:100%;
+    height:44px;
+    border:1px solid #d8dde5;
+    border-radius:9px;
+    padding:0 11px;
+    font-size:15px;
+    outline:none;
+    background:white;
+}
+
+select:focus,
+input:focus{
+    border-color:#2563eb;
+}
+
+.result-row{
+    display:flex;
+    gap:10px;
+    margin-top:12px;
+}
+
+.result-row input{
+    flex:1;
+    text-align:center;
+    font-size:21px;
+    font-weight:bold;
+    letter-spacing:3px;
+}
+
+.result-btn{
+    width:190px;
+    border:0;
+    border-radius:9px;
+    background:#2563eb;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.result-btn:disabled{
+    opacity:.6;
+}
+
+
+/* ================= RESULT INFO ================= */
+
+.result-info{
+    display:none;
+    background:white;
+    border-radius:14px;
+    padding:15px;
+    margin-bottom:15px;
+    box-shadow:0 3px 15px rgba(0,0,0,.07);
+}
+
+.result-info-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+}
+
+.market-title{
+    font-size:19px;
+    font-weight:bold;
+}
+
+.date-text{
+    color:#777;
+    font-size:13px;
+    margin-top:4px;
+}
+
+.result-number{
+    font-size:28px;
+    font-weight:bold;
+    background:#eef6ff;
+    padding:9px 16px;
+    border-radius:10px;
+}
+
+
+/* ================= STATS ================= */
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+    margin-bottom:15px;
+}
+
+.stat{
+    background:white;
+    border-radius:12px;
+    padding:13px 8px;
+    text-align:center;
+    box-shadow:0 3px 12px rgba(0,0,0,.06);
+}
+
+.stat-title{
+    font-size:11px;
+    color:#777;
+}
+
+.stat-value{
+    font-size:19px;
+    font-weight:bold;
+    margin-top:5px;
+}
+
+
+/* ================= LIST ================= */
+
+.list{
+    display:flex;
+    flex-direction:column;
+    gap:11px;
+}
+
+
+/* ================= CARD ================= */
+
+.card{
+    background:white;
+    border-radius:14px;
+    padding:15px;
+    box-shadow:0 3px 14px rgba(0,0,0,.07);
+}
+
+.card.processed{
+    opacity:.88;
+}
+
+.card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:12px;
+}
+
+.user-title{
+    font-size:16px;
+    font-weight:bold;
+}
+
+.user-sub{
+    font-size:12px;
+    color:#777;
+    margin-top:3px;
+}
+
+.status{
+    padding:6px 10px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:bold;
+    white-space:nowrap;
+}
+
+.status.pending{
+    background:#fff7ed;
+    color:#c2410c;
+}
+
+.status.accepted{
+    background:#ecfdf5;
+    color:#047857;
+}
+
+.status.cancelled{
+    background:#fef2f2;
+    color:#dc2626;
+}
+
+
+/* ================= DETAILS ================= */
+
+.details{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:8px;
+}
+
+.detail{
+    background:#f7f8fa;
+    border-radius:8px;
+    padding:9px;
+}
+
+.detail-title{
+    color:#777;
+    font-size:10px;
+}
+
+.detail-value{
+    margin-top:4px;
+    font-size:14px;
+    font-weight:bold;
+    word-break:break-word;
+}
+
+.win{
+    color:#15803d;
+    font-size:16px;
+}
+
+
+/* ================= ACTION ================= */
+
+.actions{
+    display:flex;
+    gap:9px;
+    margin-top:13px;
+}
+
+.accept-btn,
+.cancel-btn{
+    flex:1;
+    height:42px;
+    border:0;
+    border-radius:9px;
+    color:white;
+    font-size:14px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.accept-btn{
+    background:#16a34a;
+}
+
+.cancel-btn{
+    background:#dc2626;
+}
+
+.accept-btn:disabled,
+.cancel-btn:disabled{
+    opacity:.55;
+    cursor:not-allowed;
+}
+
+
+/* ================= EMPTY ================= */
+
+.empty{
+    background:white;
+    border-radius:14px;
+    padding:32px 15px;
+    text-align:center;
+    color:#777;
+    box-shadow:0 3px 12px rgba(0,0,0,.05);
+}
+
+.loading{
+    background:white;
+    border-radius:14px;
+    padding:30px;
+    text-align:center;
+    color:#666;
+}
+
+
+/* ================= MOBILE ================= */
+
+@media(max-width:700px){
+
+    .container{
+        padding:10px;
+    }
+
+    .filter-row{
+        grid-template-columns:1fr;
+    }
+
+    .result-row{
+        flex-direction:column;
+    }
+
+    .result-btn{
+        width:100%;
+        height:44px;
+    }
+
+    .result-info-top{
+        align-items:flex-start;
+    }
+
+    .result-number{
+        font-size:23px;
+    }
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .details{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .details .detail:last-child{
+        grid-column:span 2;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- ================= HEADER ================= -->
+
+<div class="header">
+
+    <h1>🏆 Admin Wining</h1>
+
+    <p>
+        Result डालें और winning manage करें
+    </p>
+
+</div>
+
+
+<div class="container">
+
+
+<!-- ================= FILTER ================= -->
+
+<div class="filter-box">
+
+    <div class="filter-title">
+        Result & Wining
+    </div>
+
+
+    <div class="filter-row">
+
+        <div class="field">
+
+            <label>
+                Date
+            </label>
+
+            <select id="dateSelect">
+
+                <option value="">
+                    Date Select करें
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="field">
+
+            <label>
+                Market
+            </label>
+
+            <select id="marketSelect">
+
+                <option value="">
+                    Market Select करें
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+
+    <div class="field"
+         style="margin-top:12px;">
+
+        <label>
+            Result
+        </label>
+
+
+        <div class="result-row">
+
+            <input
+                id="resultInput"
+                type="text"
+                inputmode="numeric"
+                maxlength="2"
+                placeholder="00">
+
+
+            <button
+                id="resultBtn"
+                class="result-btn"
+                onclick="saveResultAndFind()">
+
+                SAVE RESULT & FIND WINING
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================= RESULT INFO ================= -->
+
+<div
+    id="resultInfo"
+    class="result-info">
+
+    <div class="result-info-top">
+
+        <div>
+
+            <div
+                id="infoMarket"
+                class="market-title">
+            </div>
+
+            <div
+                id="infoDate"
+                class="date-text">
+            </div>
+
+        </div>
+
+
+        <div
+            id="infoResult"
+            class="result-number">
+            --
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================= STATS ================= -->
+
+<div class="stats">
+
+    <div class="stat">
+
+        <div class="stat-title">
+            PENDING
+        </div>
+
+        <div
+            id="pendingCount"
+            class="stat-value">
+            0
+        </div>
+
+    </div>
+
+
+    <div class="stat">
+
+        <div class="stat-title">
+            PAID
+        </div>
+
+        <div
+            id="paidAmount"
+            class="stat-value">
+            ₹0
+        </div>
+
+    </div>
+
+
+    <div class="stat">
+
+        <div class="stat-title">
+            ACCEPT
+        </div>
+
+        <div
+            id="acceptedCount"
+            class="stat-value">
+            0
+        </div>
+
+    </div>
+
+
+    <div class="stat">
+
+        <div class="stat-title">
+            CANCEL
+        </div>
+
+        <div
+            id="cancelledCount"
+            class="stat-value">
+            0
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================= WINING LIST ================= -->
+
+<div
+    id="winingList"
+    class="list">
+
+    <div class="empty">
+
+        Date, Market और Result select करके<br>
+
+        <b>SAVE RESULT & FIND WINING</b>
+        दबाएँ।
+
+    </div>
+
+</div>
+
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   SUPABASE
+===================================================== */
+
+const supabaseClient = supabase.createClient(
+
+    "https://glhomrlwnwhevunfubog.supabase.co",
+
+    "sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB"
+
+);
+
+
+/* =====================================================
+   GLOBAL
+===================================================== */
+
+let selectedDate = "";
+let selectedMarket = "";
+let selectedResult = "";
+
+let winingRows = [];
+let historyMap = {};
+
+
+/* =====================================================
+   PAGE LOAD
+===================================================== */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    async function(){
+
+        await loadDates();
+
+    }
+);
+
+
+/* =====================================================
+   LOAD DATES
+===================================================== */
+
+async function loadDates(){
+
+    const select =
+        document.getElementById("dateSelect");
+
+
+    const { data, error } =
+        await supabaseClient
+
+        .from("history")
+
+        .select("created_at")
+
+        .not(
+            "created_at",
+            "is",
+            null
+        )
+
+        .order(
+            "created_at",
+            {
+                ascending:false
+            }
+        );
+
+
+    if(error){
+
+        console.error(error);
+
+        select.innerHTML =
+            `<option value="">
+                Date load error
+             </option>`;
+
+        return;
+
+    }
+
+
+    const dates =
+        new Set();
+
+
+    (data || []).forEach(row => {
+
+        const date =
+            getLocalDate(
+                row.created_at
+            );
+
+        if(date){
+
+            dates.add(date);
+
+        }
+
+    });
+
+
+    [...dates].forEach(date => {
+
+        const option =
+            document.createElement("option");
+
+
+        option.value = date;
+
+
+        option.textContent =
+            formatDate(date);
+
+
+        select.appendChild(option);
+
+    });
+
+}
+
+
+/* =====================================================
+   DATE CHANGE
+===================================================== */
+
+document
+.getElementById("dateSelect")
+.addEventListener(
+    "change",
+    async function(){
+
+        selectedDate = this.value;
+
+        selectedMarket = "";
+
+        document
+        .getElementById("marketSelect")
+        .innerHTML =
+            `<option value="">
+                Market Select करें
+             </option>`;
+
+
+        document
+        .getElementById("resultInfo")
+        .style.display = "none";
+
+
+        if(!selectedDate){
+
+            return;
+
+        }
+
+
+        await loadMarkets(selectedDate);
+
+    }
+);
+
+
+/* =====================================================
+   LOAD MARKETS
+===================================================== */
+
+async function loadMarkets(date){
+
+    const marketSelect =
+        document.getElementById(
+            "marketSelect"
+        );
+
+
+    const { data, error } =
+        await supabaseClient
+
+        .from("history")
+
+        .select(
+            "market,created_at"
+        )
+
+        .not(
+            "market",
+            "is",
+            null
+        )
+
+        .not(
+            "created_at",
+            "is",
+            null
+        );
+
+
+    if(error){
+
+        console.error(error);
+
+        return;
+
+    }
+
+
+    const markets =
+        new Set();
+
+
+    (data || []).forEach(row => {
+
+        if(
+            getLocalDate(row.created_at)
+            === date
+        ){
+
+            if(row.market){
+
+                markets.add(
+                    row.market
+                );
+
+            }
+
+        }
+
+    });
+
+
+    [...markets]
+    .sort()
+    .forEach(market => {
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+        option.value = market;
+
+        option.textContent = market;
+
+        marketSelect.appendChild(
+            option
+        );
+
+    });
+
+}
+
+
+/* =====================================================
+   MARKET CHANGE
+===================================================== */
+
+document
+.getElementById("marketSelect")
+.addEventListener(
+    "change",
+    function(){
+
+        selectedMarket =
+            this.value;
+
+    }
+);
+
+
+/* =====================================================
+   RESULT INPUT
+===================================================== */
+
+document
+.getElementById("resultInput")
+.addEventListener(
+    "input",
+    function(){
+
+        this.value =
+            this.value
+            .replace(/[^0-9]/g,"")
+            .slice(0,2);
+
+    }
+);
+
+
+/* =====================================================
+   MAIN BUTTON
+===================================================== */
+
+async function saveResultAndFind(){
+
+    selectedDate =
+        document
+        .getElementById("dateSelect")
+        .value;
+
+
+    selectedMarket =
+        document
+        .getElementById("marketSelect")
+        .value;
+
+
+    selectedResult =
+        document
+        .getElementById("resultInput")
+        .value
+        .trim();
+
+
+    /* DATE */
+
+    if(!selectedDate){
+
+        alert(
+            "पहले Date select करें."
+        );
+
+        return;
+
+    }
+
+
+    /* MARKET */
+
+    if(!selectedMarket){
+
+        alert(
+            "पहले Market select करें."
+        );
+
+        return;
+
+    }
+
+
+    /* RESULT */
+
+    if(
+        !/^[0-9]{2}$/.test(
+            selectedResult
+        )
+    ){
+
+        alert(
+            "Result 00 से 99 के बीच 2 digit डालें."
+        );
+
+        return;
+
+    }
+
+
+    const button =
+        document.getElementById(
+            "resultBtn"
+        );
+
+
+    button.disabled = true;
+
+    button.textContent =
+        "PROCESSING...";
+
+
+    try{
+
+        /*
+         * STEP 1
+         * Game result में result save
+         */
+
+        const resultSaved =
+            await saveGameResult();
+
+
+        if(!resultSaved){
+
+            return;
+
+        }
+
+
+        /*
+         * STEP 2
+         * History से winning rows बनाना
+         */
+
+        await createWiningRows();
+
+
+        /*
+         * STEP 3
+         * Wining table reload
+         */
+
+        await loadWining();
+
+
+    }
+    finally{
+
+        button.disabled = false;
+
+        button.textContent =
+            "SAVE RESULT & FIND WINING";
+
+    }
+
+}
+
+
+/* =====================================================
+   SAVE GAME RESULT
+===================================================== */
+
+async function saveGameResult(){
+
+    /*
+     * पहले exact date + market की row
+     */
+
+    const { data, error } =
+        await supabaseClient
+
+        .from("Game result")
+
+        .select(
+            "id,name,date,number"
+        )
+
+        .eq(
+            "name",
+            selectedMarket
+        )
+
+        .eq(
+            "date",
+            selectedDate
+        )
+
+        .limit(1);
+
+
+    if(error){
+
+        console.error(error);
+
+        alert(
+            "Game result पढ़ने में error:\n\n"
+            + error.message
+        );
+
+        return false;
+
+    }
+
+
+    /*
+     * Existing row मिली
+     */
+
+    if(data && data.length > 0){
+
+        const resultId =
+            data[0].id;
+
+
+        const { error:updateError } =
+            await supabaseClient
+
+            .from("Game result")
+
+            .update({
+
+                number:
+                    selectedResult
+
+            })
+
+            .eq(
+                "id",
+                resultId
+            );
+
+
+        if(updateError){
+
+            console.error(
+                updateError
+            );
+
+            alert(
+                "Result update नहीं हुआ:\n\n"
+                + updateError.message
+            );
+
+            return false;
+
+        }
+
+
+        return true;
+
+    }
+
+
+    /*
+     * अगर row नहीं मिली तो नई row बनाओ
+     */
+
+    const { error:insertError } =
+        await supabaseClient
+
+        .from("Game result")
+
+        .insert({
+
+            name:
+                selectedMarket,
+
+            number:
+                selectedResult,
+
+            date:
+                selectedDate
+
+        });
+
+
+    if(insertError){
+
+        console.error(
+            insertError
+        );
+
+        alert(
+            "Result save नहीं हुआ:\n\n"
+            + insertError.message
+        );
+
+        return false;
+
+    }
+
+
+    return true;
+
+}
+
+
+/* =====================================================
+   CREATE WINING ROWS
+===================================================== */
+
+async function createWiningRows(){
+
+    /*
+     * इस date और market की सारी history
+     */
+
+    const { data:historyData, error } =
+        await supabaseClient
+
+        .from("history")
+
+        .select(
+            "id,user_id,market,data,total,created_at,status"
+        )
+
+        .eq(
+            "market",
+            selectedMarket
+        )
+
+        .not(
+            "created_at",
+            "is",
+            null
+        );
+
+
+    if(error){
+
+        console.error(error);
+
+        alert(
+            "History load नहीं हुई:\n\n"
+            + error.message
+        );
+
+        return;
+
+    }
+
+
+    const histories =
+        (historyData || [])
+        .filter(row => {
+
+            return (
+                getLocalDate(
+                    row.created_at
+                )
+                ===
+                selectedDate
+            );
+
+        });
+
+
+    if(histories.length === 0){
+
+        alert(
+            "इस Date और Market की कोई history bet नहीं मिली."
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * Existing winning rows
+     *
+     * Duplicate रोकने के लिए
+     */
+
+    const historyIds =
+        histories.map(
+            h => h.id
+        );
+
+
+    const { data:existingRows,
+            error:existingError } =
+
+        await supabaseClient
+
+        .from("wining")
+
+        .select(
+            "history_id,number"
+        )
+
+        .in(
+            "history_id",
+            historyIds
+        );
+
+
+    if(existingError){
+
+        console.error(
+            existingError
+        );
+
+        alert(
+            "Existing wining data पढ़ने में error:\n\n"
+            + existingError.message
+        );
+
+        return;
+
+    }
+
+
+    const existingSet =
+        new Set();
+
+
+    (existingRows || [])
+    .forEach(row => {
+
+        existingSet.add(
+            String(row.history_id)
+            + "_"
+            + String(row.number)
+            .toUpperCase()
+        );
+
+    });
+
+
+    const rowsToInsert = [];
+
+
+    /*
+     * हर history check
+     */
+
+    histories.forEach(history => {
+
+        let items;
+
+
+        try{
+
+            items =
+                JSON.parse(
+                    history.data || "[]"
+                );
+
+        }
+        catch(error){
+
+            console.error(
+                "Invalid history JSON:",
+                history.id,
+                error
+            );
+
+            return;
+
+        }
+
+
+        if(!Array.isArray(items)){
+
+            return;
+
+        }
+
+
+        items.forEach(item => {
+
+            const number =
+                String(
+                    item.number || ""
+                )
+                .trim()
+                .toUpperCase();
+
+
+            const betAmount =
+                Number(
+                    item.amount || 0
+                );
+
+
+            if(
+                !number ||
+                betAmount <= 0
+            ){
+
+                return;
+
+            }
+
+
+            /*
+             * Result matching
+             */
+
+            const winningAmount =
+                calculateWinning(
+                    number,
+                    selectedResult,
+                    betAmount
+                );
+
+
+            /*
+             * Losing number
+             */
+
+            if(winningAmount <= 0){
+
+                return;
+
+            }
+
+
+            /*
+             * Duplicate
+             */
+
+            const duplicateKey =
+                String(history.id)
+                + "_"
+                + number;
+
+
+            if(
+                existingSet.has(
+                    duplicateKey
+                )
+            ){
+
+                return;
+
+            }
+
+
+            /*
+             * Game type
+             */
+
+            let gameType =
+                "Number";
+
+
+            if(
+                number.startsWith("A") ||
+                number.startsWith("B")
+            ){
+
+                gameType =
+                    "Hurf";
+
+            }
+
+
+            rowsToInsert.push({
+
+                user_id:
+                    String(
+                        history.user_id
+                    ),
+
+                market:
+                    history.market,
+
+                number:
+                    number,
+
+                bet_amount:
+                    betAmount,
+
+                amount:
+                    winningAmount,
+
+                status:
+                    "pending",
+
+                history_id:
+                    history.id,
+
+                game_type:
+                    gameType,
+
+                created_at:
+                    history.created_at
+
+            });
+
+
+        });
+
+    });
+
+
+    /*
+     * कोई winning नहीं
+     */
+
+    if(rowsToInsert.length === 0){
+
+        console.log(
+            "No new winning rows."
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * WINING TABLE INSERT
+     */
+
+    const { error:insertError } =
+        await supabaseClient
+
+        .from("wining")
+
+        .insert(
+            rowsToInsert
+        );
+
+
+    if(insertError){
+
+        console.error(
+            insertError
+        );
+
+        alert(
+            "Wining rows create नहीं हुईं:\n\n"
+            + insertError.message
+        );
+
+        return;
+
+    }
+
+
+    alert(
+        rowsToInsert.length
+        + " winning row(s) बन गईं."
+    );
+
+}
+
+
+/* =====================================================
+   CALCULATE WINNING
+===================================================== */
+
+function calculateWinning(
+    number,
+    result,
+    betAmount
+){
+
+    const n =
+        String(number)
+        .trim()
+        .toUpperCase();
+
+
+    const r =
+        String(result)
+        .padStart(2,"0");
+
+
+    const bet =
+        Number(betAmount || 0);
+
+
+    /*
+     * EXACT NUMBER
+     *
+     * 56 = 56 × 92
+     */
+
+    if(n === r){
+
+        return bet * 92;
+
+    }
+
+
+    /*
+     * A FIRST DIGIT
+     *
+     * Result 56
+     * A5 = 9
+     */
+
+    if(
+        n ===
+        "A" + r.charAt(0)
+    ){
+
+        return bet * 9;
+
+    }
+
+
+    /*
+     * B SECOND DIGIT
+     *
+     * Result 56
+     * B6 = 9
+     */
+
+    if(
+        n ===
+        "B" + r.charAt(1)
+    ){
+
+        return bet * 9;
+
+    }
+
+
+    return 0;
+
+}
+
+
+/* =====================================================
+   LOAD WINING
+===================================================== */
+
+async function loadWining(){
+
+    /*
+     * सभी wining rows
+     */
+
+    const { data, error } =
+        await supabaseClient
+
+        .from("wining")
+
+        .select("*")
+
+        .order(
+            "id",
+            {
+                ascending:false
+            }
+        );
+
+
+    if(error){
+
+        console.error(error);
+
+        document
+        .getElementById(
+            "winingList"
+        )
+        .innerHTML =
+            `<div class="empty">
+                Wining load नहीं हुई.<br><br>
+                ${escapeHtml(
+                    error.message
+                )}
+             </div>`;
+
+        return;
+
+    }
+
+
+    winingRows =
+        data || [];
+
+
+    /*
+     * History IDs
+     */
+
+    const ids =
+        winingRows
+        .map(
+            row =>
+                row.history_id
+        )
+        .filter(
+            id =>
+                id !== null &&
+                id !== undefined
+        );
+
+
+    historyMap = {};
+
+
+    if(ids.length > 0){
+
+        const uniqueIds =
+            [...new Set(ids)];
+
+
+        const { data:histories,
+                error:historyError } =
+
+            await supabaseClient
+
+            .from("history")
+
+            .select(
+                "id,created_at,market"
+            )
+
+            .in(
+                "id",
+                uniqueIds
+            );
+
+
+        if(historyError){
+
+            console.error(
+                historyError
+            );
+
+        }
+        else{
+
+            (histories || [])
+            .forEach(h => {
+
+                historyMap[h.id] = h;
+
+            });
+
+        }
+
+    }
+
+
+    renderWining();
+
+}
+
+
+/* =====================================================
+   RENDER WINING
+===================================================== */
+
+function renderWining(){
+
+    const list =
+        document.getElementById(
+            "winingList"
+        );
+
+
+    let rows =
+        winingRows.filter(row => {
+
+            const history =
+                historyMap[
+                    row.history_id
+                ];
+
+
+            let date = null;
+
+            let market =
+                row.market;
+
+
+            if(history){
+
+                date =
+                    getLocalDate(
+                        history.created_at
+                    );
+
+
+                if(!market){
+
+                    market =
+                        history.market;
+
+                }
+
+            }
+            else if(row.created_at){
+
+                date =
+                    getLocalDate(
+                        row.created_at
+                    );
+
+            }
+
+
+            return (
+                date === selectedDate &&
+                String(market || "")
+                .trim()
+                .toLowerCase()
+                ===
+                String(selectedMarket || "")
+                .trim()
+                .toLowerCase()
+            );
+
+        });
+
+
+    /*
+     * IMPORTANT:
+     *
+     * Pending सबसे ऊपर
+     * Processed नीचे
+     */
+
+    rows.sort((a,b) => {
+
+        const aPending =
+            String(a.status)
+            .toLowerCase()
+            === "pending";
+
+
+        const bPending =
+            String(b.status)
+            .toLowerCase()
+            === "pending";
+
+
+        if(
+            aPending &&
+            !bPending
+        ){
+
+            return -1;
+
+        }
+
+
+        if(
+            !aPending &&
+            bPending
+        ){
+
+            return 1;
+
+        }
+
+
+        return (
+            Number(b.id || 0)
+            -
+            Number(a.id || 0)
+        );
+
+    });
+
+
+    /*
+     * STATS
+     */
+
+    const pending =
+        rows.filter(
+            r =>
+                r.status === "pending"
+        );
+
+
+    const accepted =
+        rows.filter(
+            r =>
+                r.status === "accepted"
+        );
+
+
+    const cancelled =
+        rows.filter(
+            r =>
+                r.status === "cancelled"
+        );
+
+
+    const paid =
+        accepted.reduce(
+            (sum,row) =>
+                sum +
+                Number(
+                    row.amount || 0
+                ),
+            0
+        );
+
+
+    document
+    .getElementById(
+        "pendingCount"
+    )
+    .textContent =
+        pending.length;
+
+
+    document
+    .getElementById(
+        "acceptedCount"
+    )
+    .textContent =
+        accepted.length;
+
+
+    document
+    .getElementById(
+        "cancelledCount"
+    )
+    .textContent =
+        cancelled.length;
+
+
+    document
+    .getElementById(
+        "paidAmount"
+    )
+    .textContent =
+        "₹" +
+        paid.toLocaleString(
+            "en-IN"
+        );
+
+
+    /*
+     * RESULT INFO
+     */
+
+    document
+    .getElementById(
+        "resultInfo"
+    )
+    .style.display =
+        "block";
+
+
+    document
+    .getElementById(
+        "infoMarket"
+    )
+    .textContent =
+        selectedMarket;
+
+
+    document
+    .getElementById(
+        "infoDate"
+    )
+    .textContent =
+        formatDate(
+            selectedDate
+        );
+
+
+    document
+    .getElementById(
+        "infoResult"
+    )
+    .textContent =
+        selectedResult;
+
+
+    /*
+     * EMPTY
+     */
+
+    if(rows.length === 0){
+
+        list.innerHTML =
+            `<div class="empty">
+
+                इस Date और Market की
+                कोई winning entry नहीं मिली.
+
+             </div>`;
+
+        return;
+
+    }
+
+
+    list.innerHTML = "";
+
+
+    /*
+     * CARDS
+     */
+
+    rows.forEach(row => {
+
+        const status =
+            String(
+                row.status ||
+                "pending"
+            ).toLowerCase();
+
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+
+        card.className =
+            "card" +
+            (
+                status !== "pending"
+                ? " processed"
+                : ""
+            );
+
+
+        const amount =
+            Number(
+                row.amount || 0
+            );
+
+
+        /*
+         * Processed status
+         */
+
+        let statusBadge = "";
+
+
+        if(status === "accepted"){
+
+            statusBadge =
+                `<div class="status accepted">
+                    ACCEPT
+                 </div>`;
+
+        }
+        else if(
+            status === "cancelled"
+        ){
+
+            statusBadge =
+                `<div class="status cancelled">
+                    CANCEL
+                 </div>`;
+
+        }
+        else{
+
+            statusBadge =
+                `<div class="status pending">
+                    PENDING
+                 </div>`;
+
+        }
+
+
+        /*
+         * Buttons
+         */
+
+        let actions = "";
+
+
+        if(status === "pending"){
+
+            actions = `
+
+                <div class="actions">
+
+                    <button
+                        class="accept-btn"
+                        onclick="acceptWining(
+                            ${Number(row.id)}
+                        )">
+
+                        ✓ ACCEPT
+
+                    </button>
+
+
+                    <button
+                        class="cancel-btn"
+                        onclick="cancelWining(
+                            ${Number(row.id)}
+                        )">
+
+                        ✕ CANCEL
+
+                    </button>
+
+                </div>
+
+            `;
+
+        }
+
+
+        card.innerHTML = `
+
+            <div class="card-top">
+
+                <div>
+
+                    <div class="user-title">
+
+                        User ID:
+                        ${escapeHtml(
+                            row.user_id || "-"
+                        )}
+
+                    </div>
+
+                    <div class="user-sub">
+
+                        History ID:
+                        ${escapeHtml(
+                            row.history_id || "-"
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                ${statusBadge}
+
+            </div>
+
+
+            <div class="details">
+
+
+                <div class="detail">
+
+                    <div class="detail-title">
+                        MARKET
+                    </div>
+
+                    <div class="detail-value">
+
+                        ${escapeHtml(
+                            row.market || "-"
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <div class="detail">
+
+                    <div class="detail-title">
+                        NUMBER
+                    </div>
+
+                    <div class="detail-value">
+
+                        ${escapeHtml(
+                            row.number || "-"
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <div class="detail">
+
+                    <div class="detail-title">
+                        BET
+                    </div>
+
+                    <div class="detail-value">
+
+                        ₹${Number(
+                            row.bet_amount || 0
+                        ).toLocaleString(
+                            "en-IN"
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <div class="detail">
+
+                    <div class="detail-title">
+                        GAME
+                    </div>
+
+                    <div class="detail-value">
+
+                        ${escapeHtml(
+                            row.game_type || "-"
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <div class="detail">
+
+                    <div class="detail-title">
+                        WINNING
+                    </div>
+
+                    <div class="detail-value win">
+
+                        ₹${amount.toLocaleString(
+                            "en-IN"
+                        )}
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            ${actions}
+
+        `;
+
+
+        list.appendChild(card);
+
+    });
+
+}
+
+
+/* =====================================================
+   ACCEPT
+===================================================== */
+
+async function acceptWining(id){
+
+    /*
+     * Current row फिर से check
+     */
+
+    const { data, error } =
+        await supabaseClient
+
+        .from("wining")
+
+        .select(
+            "id,user_id,number,amount,status"
+        )
+
+        .eq(
+            "id",
+            id
+        )
+
+        .single();
+
+
+    if(error){
+
+        alert(
+            "Entry verify नहीं हुई:\n\n"
+            + error.message
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * Already processed
+     */
+
+    if(data.status !== "pending"){
+
+        alert(
+            "यह winning पहले ही process हो चुकी है."
+        );
+
+        await loadWining();
+
+        return;
+
+    }
+
+
+    const amount =
+        Number(
+            data.amount || 0
+        );
+
+
+    if(amount <= 0){
+
+        alert(
+            "Winning amount 0 है."
+        );
+
+        return;
+
+    }
+
+
+    const ok =
+        confirm(
+            "Winning ACCEPT करें?\n\n"
+            +
+            "User ID: "
+            + data.user_id
+            + "\n"
+            +
+            "Number: "
+            + data.number
+            + "\n"
+            +
+            "Amount: ₹"
+            + amount.toLocaleString(
+                "en-IN"
+            )
+        );
+
+
+    if(!ok){
+
+        return;
+
+    }
+
+
+    /*
+     * Pending ही होने पर accept
+     */
+
+    const { error:updateError } =
+        await supabaseClient
+
+        .from("wining")
+
+        .update({
+
+            status:
+                "accepted"
+
+        })
+
+        .eq(
+            "id",
+            id
+        )
+
+        .eq(
+            "status",
+            "pending"
+        );
+
+
+    if(updateError){
+
+        console.error(
+            updateError
+        );
+
+        alert(
+            "Accept नहीं हुआ:\n\n"
+            + updateError.message
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * Existing trigger:
+     *
+     * pending -> accepted
+     *
+     * login.balance में amount
+     */
+
+    alert(
+        "✓ ACCEPT हो गया\n\n"
+        +
+        "₹"
+        +
+        amount.toLocaleString(
+            "en-IN"
+        )
+        +
+        " wallet में add किया जाएगा."
+    );
+
+
+    await loadWining();
+
+}
+
+
+/* =====================================================
+   CANCEL
+===================================================== */
+
+async function cancelWining(id){
+
+    const { data, error } =
+        await supabaseClient
+
+        .from("wining")
+
+        .select(
+            "id,user_id,number,status"
+        )
+
+        .eq(
+            "id",
+            id
+        )
+
+        .single();
+
+
+    if(error){
+
+        alert(
+            "Entry verify नहीं हुई:\n\n"
+            + error.message
+        );
+
+        return;
+
+    }
+
+
+    if(data.status !== "pending"){
+
+        alert(
+            "यह winning पहले ही process हो चुकी है."
+        );
+
+        await loadWining();
+
+        return;
+
+    }
+
+
+    const ok =
+        confirm(
+            "इस winning को CANCEL करें?\n\n"
+            +
+            "User ID: "
+            + data.user_id
+            + "\n"
+            +
+            "Number: "
+            + data.number
+        );
+
+
+    if(!ok){
+
+        return;
+
+    }
+
+
+    const { error:updateError } =
+        await supabaseClient
+
+        .from("wining")
+
+        .update({
+
+            status:
+                "cancelled"
+
+        })
+
+        .eq(
+            "id",
+            id
+        )
+
+        .eq(
+            "status",
+            "pending"
+        );
+
+
+    if(updateError){
+
+        console.error(
+            updateError
+        );
+
+        alert(
+            "Cancel नहीं हुआ:\n\n"
+            + updateError.message
+        );
+
+        return;
+
+    }
+
+
+    alert(
+        "✕ CANCEL हो गया."
+    );
+
+
+    await loadWining();
+
+}
+
+
+/* =====================================================
+   HELPERS
+===================================================== */
+
+function getLocalDate(dateString){
+
+    if(!dateString){
+
+        return null;
+
+    }
+
+
+    const d =
+        new Date(dateString);
+
+
+    return (
+        d.getFullYear()
+        +
+        "-"
+        +
+        String(
+            d.getMonth()+1
+        ).padStart(2,"0")
+        +
+        "-"
+        +
+        String(
+            d.getDate()
+        ).padStart(2,"0")
+    );
+
+}
+
+
+function formatDate(date){
+
+    if(!date){
+
+        return "-";
+
+    }
+
+
+    const parts =
+        date.split("-");
+
+
+    if(parts.length !== 3){
+
+        return date;
+
+    }
+
+
+    return (
+        parts[2]
+        +
+        "-"
+        +
+        parts[1]
+        +
+        "-"
+        +
+        parts[0]
+    );
+
+}
+
+
+function escapeHtml(value){
+
+    return String(
+        value ?? ""
+    )
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+    .replace(
+        /</g,
+        "&lt;"
+    )
+    .replace(
+        />/g,
+        "&gt;"
+    )
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+    .replace(
+        /'/g,
+        "&#039;"
+    );
+
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Result Chart</title>
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f2f2f2;
+}
+
+.header{
+  background:#0057d8;
+  color:white;
+  text-align:center;
+  padding:16px;
+  font-size:23px;
+  font-weight:bold;
+}
+
+.container{
+  padding:15px;
+}
+
+/* MARKET BUTTON */
+
+.market{
+  background:white;
+  margin-bottom:12px;
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,.12);
+}
+
+.market-title{
+  padding:17px;
+  font-size:19px;
+  font-weight:bold;
+  cursor:pointer;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.arrow{
+  font-size:20px;
+}
+
+/* RECORD */
+
+.record{
+  display:none;
+  border-top:1px solid #ddd;
+}
+
+.row{
+  display:flex;
+  border-bottom:1px solid #ddd;
+  background:white;
+}
+
+.row:last-child{
+  border-bottom:none;
+}
+
+.date{
+  width:50%;
+  padding:13px;
+  text-align:center;
+  font-weight:bold;
+}
+
+.number{
+  width:50%;
+  padding:13px;
+  text-align:center;
+  font-size:18px;
+  font-weight:bold;
+}
+
+.empty{
+  padding:20px;
+  text-align:center;
+  color:#777;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  Result Chart
+</div>
+
+<div class="container" id="markets"></div>
+
+
+<script>
+
+/*
+========================================
+DEMO DATA
+LATEST DATE FIRST
+========================================
+*/
+
+const resultData = {
+
+  "Deshawar": [
+    {date:"25-08-2026", number:"05"},
+    {date:"24-08-2026", number:"30"},
+    {date:"23-08-2026", number:"18"},
+    {date:"22-08-2026", number:"41"}
+  ],
+
+  "Fridabad": [
+    {date:"25-08-2026", number:"72"},
+    {date:"24-08-2026", number:"41"},
+    {date:"23-08-2026", number:"09"},
+    {date:"22-08-2026", number:"65"}
+  ],
+
+  "GZBD": [
+    {date:"25-08-2026", number:"00"},
+    {date:"24-08-2026", number:"05"},
+    {date:"23-08-2026", number:"77"},
+    {date:"22-08-2026", number:"32"}
+  ],
+
+  "Gali": [
+    {date:"25-08-2026", number:"18"},
+    {date:"24-08-2026", number:"62"},
+    {date:"23-08-2026", number:"40"},
+    {date:"22-08-2026", number:"11"}
+  ]
+
+};
+
+
+/*
+========================================
+CREATE MARKET HEADINGS
+========================================
+*/
+
+const container =
+  document.getElementById("markets");
+
+
+Object.keys(resultData).forEach(
+  (marketName,index) => {
+
+    const market =
+      document.createElement("div");
+
+    market.className="market";
+
+
+    /*
+    TITLE
+    */
+
+    const title =
+      document.createElement("div");
+
+    title.className="market-title";
+
+    title.innerHTML = `
+      <span>${marketName} Record</span>
+      <span class="arrow">▼</span>
+    `;
+
+
+    /*
+    RECORD BOX
+    */
+
+    const record =
+      document.createElement("div");
+
+    record.className="record";
+
+
+    /*
+    RESULTS
+    */
+
+    const records =
+      resultData[marketName];
+
+
+    if(!records || records.length===0){
+
+      record.innerHTML =
+        `<div class="empty">
+          No Record Found
+        </div>`;
+
+    }else{
+
+      records.forEach(item => {
+
+        const row =
+          document.createElement("div");
+
+        row.className="row";
+
+        row.innerHTML = `
+          <div class="date">
+            ${item.date}
+          </div>
+
+          <div class="number">
+            ${item.number}
+          </div>
+        `;
+
+        record.appendChild(row);
+
+      });
+
+    }
+
+
+    /*
+    CLICK OPEN / CLOSE
+    */
+
+    title.onclick = function(){
+
+      const isOpen =
+        record.style.display === "block";
+
+
+      record.style.display =
+        isOpen ? "none" : "block";
+
+
+      title.querySelector(".arrow")
+        .textContent =
+        isOpen ? "▼" : "▲";
+
+    };
+
+
+    market.appendChild(title);
+
+    market.appendChild(record);
+
+    container.appendChild(market);
+
+  }
+);
+
+</script>
+
+</body>
+</html>

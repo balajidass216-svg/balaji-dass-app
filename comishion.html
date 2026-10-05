@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>My Commission</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  padding:0;
+  font-family:Arial,sans-serif;
+  background:#f5f5f5;
+  color:#222;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.header{
+  background:linear-gradient(
+    135deg,
+    #ff9800,
+    #ff5722
+  );
+
+  color:white;
+
+  padding:18px 15px;
+
+  text-align:center;
+
+  font-size:21px;
+
+  font-weight:bold;
+
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.15);
+}
+
+
+/* =========================
+   MAIN
+========================= */
+
+.container{
+  width:100%;
+
+  max-width:700px;
+
+  margin:auto;
+
+  padding:12px;
+}
+
+
+/* =========================
+   COMMISSION ROW
+========================= */
+
+.commission-row{
+
+  background:white;
+
+  border-radius:10px;
+
+  margin-bottom:10px;
+
+  padding:12px;
+
+  box-shadow:
+    0 2px 7px rgba(0,0,0,0.08);
+
+}
+
+
+/* =========================
+   TOP
+========================= */
+
+.row-top{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  gap:10px;
+
+  margin-bottom:8px;
+
+}
+
+
+.user-name{
+
+  font-size:16px;
+
+  font-weight:bold;
+
+  color:#222;
+
+}
+
+
+.mobile{
+
+  font-size:14px;
+
+  color:#666;
+
+  white-space:nowrap;
+
+}
+
+
+/* =========================
+   MARKET
+========================= */
+
+.market{
+
+  font-size:14px;
+
+  font-weight:bold;
+
+  color:#444;
+
+  margin-bottom:8px;
+
+}
+
+
+/* =========================
+   BOTTOM
+========================= */
+
+.row-bottom{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  gap:10px;
+
+}
+
+
+.commission{
+
+  font-size:16px;
+
+  font-weight:bold;
+
+  color:#e65100;
+
+}
+
+
+.status{
+
+  font-size:13px;
+
+  font-weight:bold;
+
+  padding:5px 10px;
+
+  border-radius:20px;
+
+  background:#fff3e0;
+
+  color:#e65100;
+
+}
+
+
+/* =========================
+   STATUS COLORS
+========================= */
+
+.status.accepted{
+
+  background:#e8f5e9;
+
+  color:#2e7d32;
+
+}
+
+
+.status.cancelled{
+
+  background:#ffebee;
+
+  color:#c62828;
+
+}
+
+
+.status.pending{
+
+  background:#fff8e1;
+
+  color:#ef6c00;
+
+}
+
+
+/* =========================
+   LOADING
+========================= */
+
+.loading{
+
+  text-align:center;
+
+  padding:30px 10px;
+
+  color:#777;
+
+  font-size:15px;
+
+}
+
+
+/* =========================
+   NO DATA
+========================= */
+
+.no-data{
+
+  background:white;
+
+  border-radius:10px;
+
+  padding:30px 15px;
+
+  text-align:center;
+
+  color:#777;
+
+  box-shadow:
+    0 2px 7px rgba(0,0,0,0.08);
+
+}
+
+
+/* =========================
+   ERROR
+========================= */
+
+.error{
+
+  background:#ffebee;
+
+  color:#c62828;
+
+  border-radius:10px;
+
+  padding:15px;
+
+  text-align:center;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================
+     HEADER
+========================= -->
+
+<div class="header">
+  My Commission
+</div>
+
+
+<!-- =========================
+     CONTAINER
+========================= -->
+
+<div
+  id="commissionContainer"
+  class="container"
+>
+
+  <div class="loading">
+    Loading...
+  </div>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   SUPABASE
+===================================================== */
+
+const supabaseClient =
+  supabase.createClient(
+
+    "https://glhomrlwnwhevunfubog.supabase.co",
+
+    "sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB"
+
+  );
+
+
+/* =====================================================
+   CONTAINER
+===================================================== */
+
+const container =
+  document.getElementById(
+    "commissionContainer"
+  );
+
+
+/* =====================================================
+   GET CURRENT USER
+===================================================== */
+
+function getCurrentUser(){
+
+  const keys = [
+
+    "user",
+
+    "currentUser",
+
+    "loginUser",
+
+    "loggedUser"
+
+  ];
+
+
+  for(const key of keys){
+
+    const value =
+      localStorage.getItem(key);
+
+
+    if(!value){
+
+      continue;
+
+    }
+
+
+    try{
+
+      const user =
+        JSON.parse(value);
+
+
+      if(user){
+
+        return user;
+
+      }
+
+    }
+
+    catch(error){
+
+      console.log(
+        "Local user parse error:",
+        error
+      );
+
+    }
+
+  }
+
+
+  return null;
+
+}
+
+
+/* =====================================================
+   LOAD COMMISSION
+===================================================== */
+
+async function loadCommission(){
+
+  try{
+
+    const currentUser =
+      getCurrentUser();
+
+
+    if(!currentUser){
+
+      container.innerHTML = `
+
+        <div class="error">
+          User login nahi mila
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    /* =================================================
+       CURRENT USER KA REFER CODE
+    ================================================= */
+
+    let myReferCode =
+      currentUser.refer_code ||
+      currentUser.ref_code;
+
+
+    /*
+      Agar localStorage me refer code nahi hai
+      to login table se nikalo
+    */
+
+    if(!myReferCode){
+
+      let loginQuery =
+        supabaseClient
+          .from("login")
+          .select(
+            "id,user_id,name,mobile,refer_code,ref_code"
+          );
+
+
+      if(currentUser.id){
+
+        loginQuery =
+          loginQuery.eq(
+            "id",
+            currentUser.id
+          );
+
+      }
+
+
+      const {
+        data: loginData
+      } =
+        await loginQuery.maybeSingle();
+
+
+      if(loginData){
+
+        myReferCode =
+          loginData.refer_code ||
+          loginData.ref_code;
+
+      }
+
+    }
+
+
+    if(!myReferCode){
+
+      container.innerHTML = `
+
+        <div class="no-data">
+          Referral code nahi mila
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    /* =================================================
+       COMMISSION RECORDS
+    ================================================= */
+
+    const {
+
+      data: commissionData,
+
+      error: commissionError
+
+    } =
+      await supabaseClient
+
+        .from("commission_records")
+
+        .select(`
+          id,
+          user_id,
+          market,
+          total,
+          ref_by,
+          commission,
+          commission_amount,
+          commission_percent,
+          status,
+          history_id,
+          created_at
+        `)
+
+        .eq(
+          "ref_by",
+          myReferCode
+        )
+
+        .order(
+          "created_at",
+          {
+            ascending:false
+          }
+        );
+
+
+    if(commissionError){
+
+      console.log(
+        "Commission error:",
+        commissionError
+      );
+
+
+      container.innerHTML = `
+
+        <div class="error">
+          Commission data load nahi hua
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    if(
+      !commissionData ||
+      commissionData.length === 0
+    ){
+
+      container.innerHTML = `
+
+        <div class="no-data">
+          No commission found
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    /* =================================================
+       LOGIN TABLE DATA
+       NAME + MOBILE KE LIYE
+    ================================================= */
+
+    const {
+
+      data: loginUsers,
+
+      error: loginError
+
+    } =
+      await supabaseClient
+
+        .from("login")
+
+        .select(
+          "id,user_id,name,mobile"
+        );
+
+
+    if(loginError){
+
+      console.log(
+        "Login data error:",
+        loginError
+      );
+
+    }
+
+
+    /* =================================================
+       CREATE ROWS
+    ================================================= */
+
+    container.innerHTML = "";
+
+
+    commissionData.forEach(
+      record => {
+
+
+        /* =============================================
+           USER FIND
+        ============================================= */
+
+        let user = null;
+
+
+        if(loginUsers){
+
+          user =
+            loginUsers.find(
+              item => {
+
+                const commissionUserId =
+                  String(
+                    record.user_id ?? ""
+                  );
+
+
+                const loginId =
+                  String(
+                    item.id ?? ""
+                  );
+
+
+                const loginUserId =
+                  String(
+                    item.user_id ?? ""
+                  );
+
+
+                return (
+
+                  commissionUserId === loginId ||
+
+                  commissionUserId === loginUserId
+
+                );
+
+              }
+            );
+
+        }
+
+
+        /* =============================================
+           NAME
+        ============================================= */
+
+        const userName =
+          user?.name ||
+          "User";
+
+
+        /* =============================================
+           MOBILE
+        ============================================= */
+
+        const mobile =
+          String(
+            user?.mobile || ""
+          );
+
+
+        let lastFour =
+          mobile.slice(-4);
+
+
+        if(lastFour.length < 4){
+
+          lastFour =
+            "----";
+
+        }
+
+
+        const maskedMobile =
+          "****" + lastFour;
+
+
+        /* =============================================
+           MARKET
+        ============================================= */
+
+        const market =
+          record.market ||
+          "-";
+
+
+        /* =============================================
+           COMMISSION
+        ============================================= */
+
+        const commissionValue =
+          record.commission_amount ??
+          record.commission ??
+          0;
+
+
+        /* =============================================
+           STATUS
+        ============================================= */
+
+        const status =
+          record.status ||
+          "pending";
+
+
+        const statusText =
+          String(status);
+
+
+        const statusClass =
+          statusText
+            .toLowerCase()
+            .replace(
+              /\s+/g,
+              "-"
+            );
+
+
+        /* =============================================
+           ROW
+        ============================================= */
+
+        const row =
+          document.createElement(
+            "div"
+          );
+
+
+        row.className =
+          "commission-row";
+
+
+        row.innerHTML = `
+
+          <div class="row-top">
+
+            <div class="user-name">
+              ${escapeHTML(userName)}
+            </div>
+
+            <div class="mobile">
+              ${maskedMobile}
+            </div>
+
+          </div>
+
+
+          <div class="market">
+            ${escapeHTML(market)}
+          </div>
+
+
+          <div class="row-bottom">
+
+            <div class="commission">
+              ₹${Number(
+                commissionValue
+              ).toFixed(2)}
+            </div>
+
+            <div class="status ${statusClass}">
+              ${escapeHTML(
+                statusText
+              )}
+            </div>
+
+          </div>
+
+        `;
+
+
+        container.appendChild(
+          row
+        );
+
+      }
+    );
+
+  }
+
+  catch(error){
+
+    console.log(
+      "Commission page error:",
+      error
+    );
+
+
+    container.innerHTML = `
+
+      <div class="error">
+        Something went wrong
+      </div>
+
+    `;
+
+  }
+
+}
+
+
+/* =====================================================
+   HTML SAFE
+===================================================== */
+
+function escapeHTML(value){
+
+  return String(value)
+
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+
+    .replace(
+      /</g,
+      "&lt;"
+    )
+
+    .replace(
+      />/g,
+      "&gt;"
+    )
+
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
+}
+
+
+/* =====================================================
+   START
+===================================================== */
+
+loadCommission();
+
+
+/* =====================================================
+   AUTO REFRESH
+   60 SECOND
+===================================================== */
+
+setInterval(
+
+  loadCommission,
+
+  60000
+
+);
+
+</script>
+
+
+</body>
+
+</html>

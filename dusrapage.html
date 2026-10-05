@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Winning</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+html,
+body{
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+}
+
+body{
+  font-family:Arial,sans-serif;
+  background:#f2f2f2;
+  overflow:hidden;
+}
+
+
+/* HEADER */
+
+.title{
+  height:28px;
+
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+
+  align-items:center;
+
+  background:green;
+  color:white;
+
+  padding:0 10px;
+
+  font-size:12px;
+  font-weight:bold;
+}
+
+.title div:nth-child(2){
+  text-align:center;
+}
+
+.title div:nth-child(3){
+  text-align:right;
+}
+
+
+/* FRAME AREA */
+
+#list{
+  position:relative;
+
+  width:100%;
+  height:calc(100% - 28px);
+
+  overflow:hidden;
+}
+
+
+/* MOVING CONTENT */
+
+#scrollList{
+  position:absolute;
+
+  left:0;
+  top:0;
+
+  width:100%;
+
+  padding:5px 8px;
+
+  transform:translateY(0);
+
+}
+
+
+/* CARD */
+
+.card{
+
+  width:100%;
+
+  background:white;
+
+  margin-bottom:6px;
+
+  padding:8px 10px;
+
+  border-radius:9px;
+
+  display:grid;
+
+  grid-template-columns:1fr 1fr 1fr;
+
+  align-items:center;
+
+  box-shadow:0 1px 4px rgba(0,0,0,.12);
+
+}
+
+
+/* USER */
+
+.name{
+
+  font-size:14px;
+
+  font-weight:bold;
+
+  color:#222;
+
+  overflow:hidden;
+
+  white-space:nowrap;
+
+  text-overflow:ellipsis;
+
+}
+
+
+/* MARKET */
+
+.market{
+
+  text-align:center;
+
+  font-size:13px;
+
+  font-weight:bold;
+
+  color:#1e73be;
+
+  overflow:hidden;
+
+  white-space:nowrap;
+
+  text-overflow:ellipsis;
+
+}
+
+
+/* AMOUNT */
+
+.amount{
+
+  text-align:right;
+
+  font-size:14px;
+
+  font-weight:bold;
+
+  color:green;
+
+}
+
+
+/* LOADING */
+
+.loading{
+
+  text-align:center;
+
+  padding:15px;
+
+  font-weight:bold;
+
+  color:#555;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- HEADER -->
+
+<div class="title">
+
+  <div>User</div>
+
+  <div>Market</div>
+
+  <div>Winning</div>
+
+</div>
+
+
+<!-- SCROLL AREA -->
+
+<div id="list">
+
+  <div id="scrollList">
+
+    <div class="loading">
+      Loading...
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<script>
+
+
+/* =========================
+   SUPABASE
+========================= */
+
+const client = window.supabase.createClient(
+
+  "https://glhomrlwnwhevunfubog.supabase.co",
+
+  "sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB"
+
+);
+
+
+
+/* =========================
+   VARIABLES
+========================= */
+
+let position = 0;
+
+let animationRunning = false;
+
+
+
+/* =========================
+   LOAD WINNING
+========================= */
+
+async function loadWinning(){
+
+  const scrollList =
+    document.getElementById("scrollList");
+
+
+  /* GET WINNING */
+
+  const {
+    data: winnings,
+    error: winningError
+  } = await client
+
+    .from("admin wining")
+
+    .select(
+      "user_id, market, amount, created_at"
+    )
+
+    .order(
+      "created_at",
+      {
+        ascending:false
+      }
+    );
+
+
+  if(winningError){
+
+    console.log(
+      "WINNING ERROR:",
+      winningError
+    );
+
+    scrollList.innerHTML = `
+
+      <div class="loading">
+        Winning load nahi hui
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  if(
+    !winnings ||
+    winnings.length === 0
+  ){
+
+    scrollList.innerHTML = `
+
+      <div class="loading">
+        No Winning Found
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+
+
+  /* =========================
+     GET USERS
+  ========================= */
+
+  const {
+    data: users,
+    error: userError
+  } = await client
+
+    .from("login")
+
+    .select("id, name");
+
+
+  if(userError){
+
+    console.log(
+      "USER ERROR:",
+      userError
+    );
+
+    scrollList.innerHTML = `
+
+      <div class="loading">
+        User data load nahi hua
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+
+
+  /* =========================
+     USER MAP
+  ========================= */
+
+  const userMap = {};
+
+
+  if(users){
+
+    users.forEach(user => {
+
+      userMap[
+        String(user.id)
+      ] =
+        user.name || "User";
+
+    });
+
+  }
+
+
+
+  /* =========================
+     CREATE LIST
+  ========================= */
+
+  let html = "";
+
+
+  winnings.forEach(item => {
+
+
+    const userName =
+      userMap[
+        String(item.user_id)
+      ] || "User";
+
+
+    const market =
+      item.market || "-";
+
+
+    const amount =
+      Number(item.amount || 0);
+
+
+
+    html += `
+
+      <div class="card">
+
+        <div class="name">
+
+          ${userName}
+
+        </div>
+
+
+        <div class="market">
+
+          ${market}
+
+        </div>
+
+
+        <div class="amount">
+
+          ₹ ${amount}
+
+        </div>
+
+      </div>
+
+    `;
+
+  });
+
+
+
+  /*
+     Duplicate list
+
+     Isse scrolling continuous
+     lagegi.
+  */
+
+  scrollList.innerHTML =
+    html + html;
+
+
+
+  /* Reset position */
+
+  position = 0;
+
+  scrollList.style.transform =
+    "translateY(0px)";
+
+}
+
+
+
+/* =========================
+   AUTO SLIDE
+========================= */
+
+function autoSlide(){
+
+  const list =
+    document.getElementById("list");
+
+
+  const scrollList =
+    document.getElementById("scrollList");
+
+
+  if(!list || !scrollList)
+    return;
+
+
+  /*
+     Agar content frame se chhota hai
+     to movement ki zarurat nahi.
+  */
+
+  if(
+    scrollList.scrollHeight <=
+    list.clientHeight
+  ){
+
+    return;
+
+  }
+
+
+  /*
+     Speed
+
+     0.5 = slow
+     1   = normal
+     2   = fast
+  */
+
+  position -= 0.5;
+
+
+  /*
+     Half content complete hone par
+     position reset.
+  */
+
+  const halfHeight =
+    scrollList.scrollHeight / 2;
+
+
+  if(
+    Math.abs(position) >=
+    halfHeight
+  ){
+
+    position = 0;
+
+  }
+
+
+  scrollList.style.transform =
+    `translateY(${position}px)`;
+
+}
+
+
+
+/* =========================
+   START
+========================= */
+
+loadWinning();
+
+
+
+/*
+   Smooth movement
+*/
+
+setInterval(
+  autoSlide,
+  30
+);
+
+
+
+/*
+   New winning check
+   every 30 seconds
+*/
+
+setInterval(
+  loadWinning,
+  30000
+);
+
+
+</script>
+
+
+</body>
+</html>

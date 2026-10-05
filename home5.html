@@ -1,0 +1,1711 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>Home</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+/* =========================
+   RESET
+========================= */
+
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html,
+body{
+  margin:0;
+  padding:0;
+  width:100%;
+  min-height:100%;
+}
+
+body{
+  font-family:Arial, sans-serif;
+  background:#f3f4f6;
+  color:#222;
+  padding-bottom:86px;
+}
+
+
+/* =========================
+   TOP HEADER
+========================= */
+
+.topHeader{
+
+  height:105px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #e5b52e,
+      #d19b19
+    );
+
+  position:relative;
+
+  border-radius:0 0 24px 24px;
+
+  box-shadow:
+    0 4px 12px rgba(0,0,0,.18);
+
+}
+
+
+/* =========================
+   MENU
+========================= */
+
+#menuBtn{
+
+  position:absolute;
+
+  left:18px;
+  top:58px;
+
+  width:42px;
+  height:38px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  color:white;
+
+  font-size:28px;
+
+  line-height:1;
+
+  cursor:pointer;
+
+  z-index:999;
+
+}
+
+
+/* =========================
+   USER ID
+========================= */
+
+#userId{
+
+  position:absolute;
+
+  left:65px;
+  top:57px;
+
+  height:39px;
+
+  min-width:95px;
+  max-width:110px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:white;
+
+  color:#222;
+
+  padding:0 12px;
+
+  border-radius:22px;
+
+  font-size:13px;
+
+  font-weight:bold;
+
+  overflow:hidden;
+
+  white-space:nowrap;
+
+  text-overflow:ellipsis;
+
+  box-shadow:
+    0 2px 7px rgba(0,0,0,.15);
+
+}
+
+
+/* =========================
+   WALLET
+========================= */
+
+#wallet{
+
+  position:absolute;
+
+  left:56%;
+
+  transform:translateX(-50%);
+
+  top:57px;
+
+  height:39px;
+
+  min-width:100px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  background:#fff;
+
+  color:#222;
+
+  padding:0 5px 0 15px;
+
+  border-radius:22px;
+
+  font-size:16px;
+
+  font-weight:bold;
+
+  box-shadow:
+    0 2px 7px rgba(0,0,0,.15);
+
+  cursor:pointer;
+
+}
+
+
+/* =========================
+   HELP
+========================= */
+
+.helpBox{
+
+  position:absolute;
+
+  right:17px;
+  top:53px;
+
+  width:48px;
+
+  color:white;
+
+  text-align:center;
+
+  font-size:12px;
+
+  font-weight:bold;
+
+  cursor:pointer;
+
+}
+
+
+.helpIcon{
+
+  width:32px;
+  height:32px;
+
+  margin:auto;
+
+  display:flex;
+
+  align-items:center;
+  justify-content:center;
+
+  background:rgba(255,255,255,.18);
+
+  border-radius:50%;
+
+  font-size:20px;
+
+  margin-bottom:2px;
+
+}
+
+
+/* =========================
+   MAIN
+========================= */
+
+.main{
+
+  width:100%;
+
+  padding:14px 12px 20px;
+
+}
+
+
+/* =========================
+   BANNER
+========================= */
+
+.banner{
+
+  width:100%;
+
+  height:190px;
+
+  border-radius:18px;
+
+  overflow:hidden;
+
+  background:white;
+
+  border:2px solid #171717;
+
+  box-shadow:
+    0 4px 12px rgba(0,0,0,.12);
+
+  margin-bottom:17px;
+
+}
+
+.banner iframe{
+
+  width:100%;
+  height:100%;
+
+  border:0;
+
+  display:block;
+
+}
+
+
+/* =========================
+   SLOGAN
+========================= */
+
+.slogan{
+
+  background:white;
+
+  border-radius:15px;
+
+  padding:13px 8px;
+
+  text-align:center;
+
+  font-size:18px;
+
+  font-weight:bold;
+
+  color:#e52b23;
+
+  margin-bottom:17px;
+
+  box-shadow:
+    0 2px 8px rgba(0,0,0,.08);
+
+}
+
+.slogan span{
+  color:#d7a928;
+}
+
+
+/* =========================
+   ACTION BAR
+========================= */
+
+.actionBar{
+
+  display:grid;
+
+  grid-template-columns:
+    repeat(4,1fr);
+
+  gap:8px;
+
+  margin-bottom:20px;
+
+}
+
+
+.actionBtn{
+
+  min-width:0;
+
+  background:white;
+
+  border:0;
+
+  border-radius:17px;
+
+  padding:10px 4px 9px;
+
+  color:#222;
+
+  text-align:center;
+
+  font-weight:bold;
+
+  cursor:pointer;
+
+  box-shadow:
+    0 2px 8px rgba(0,0,0,.09);
+
+  transition:.15s;
+
+}
+
+.actionBtn:active{
+
+  transform:scale(.94);
+
+}
+
+
+.actionIcon{
+
+  width:48px;
+  height:48px;
+
+  margin:auto;
+
+  border-radius:50%;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  font-size:27px;
+
+  background:#fff5d0;
+
+}
+
+
+.actionText{
+
+  margin-top:7px;
+
+  font-size:12px;
+
+  white-space:nowrap;
+
+}
+
+
+/* =========================
+   GAME SECTION
+========================= */
+
+.container{
+
+  width:100%;
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:13px;
+
+}
+
+
+/* =========================
+   GAME CARD
+========================= */
+
+.btn{
+
+  width:100%;
+
+  background:
+    linear-gradient(
+      145deg,
+      #151922,
+      #0d1016
+    );
+
+  border-radius:22px;
+
+  padding:17px 15px 15px;
+
+  text-align:center;
+
+  color:white;
+
+  border:none;
+
+  overflow:hidden;
+
+  box-shadow:
+    0 5px 14px rgba(0,0,0,.20);
+
+  transition:.15s;
+
+}
+
+.btn:active{
+
+  transform:scale(.985);
+
+}
+
+
+/* =========================
+   GAME TOP
+========================= */
+
+.gameTop{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  margin-bottom:13px;
+
+}
+
+.gameTimeLabel{
+
+  color:#aaa;
+
+  font-size:12px;
+
+}
+
+.gameTimeLabel span{
+
+  color:#e5b52e;
+
+  font-weight:bold;
+
+}
+
+
+/* =========================
+   GAME NAME
+========================= */
+
+.gameName{
+
+  background:
+    linear-gradient(
+      90deg,
+      #171a21,
+      #242933,
+      #171a21
+    );
+
+  border:1px solid #30343d;
+
+  border-radius:18px;
+
+  padding:11px 8px;
+
+  font-size:18px;
+
+  font-weight:bold;
+
+  color:white;
+
+  margin-bottom:14px;
+
+}
+
+
+/* =========================
+   NUMBERS
+========================= */
+
+.gameNumberRow{
+
+  display:flex;
+
+  justify-content:center;
+
+  align-items:center;
+
+  gap:13px;
+
+}
+
+
+.numberBox{
+
+  width:110px;
+  height:92px;
+
+  background:#171c26;
+
+  border:1px solid #292e38;
+
+  border-radius:17px;
+
+  display:flex;
+
+  flex-direction:column;
+
+  align-items:center;
+
+  justify-content:center;
+
+}
+
+
+.gameNumber{
+
+  font-size:28px;
+
+  color:#f0cf55;
+
+  font-weight:bold;
+
+}
+
+
+.numberLabel{
+
+  font-size:12px;
+
+  color:#999;
+
+  margin-top:5px;
+
+}
+
+
+.arrow{
+
+  font-size:30px;
+
+  color:#777;
+
+}
+
+
+/* =========================
+   STATUS
+========================= */
+
+.statusBox{
+
+  width:100%;
+
+  margin-top:14px;
+
+  padding:12px;
+
+  border-radius:15px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #ffe48a,
+      #b88820
+    );
+
+  color:#111;
+
+  font-size:18px;
+
+  font-weight:bold;
+
+}
+
+
+/* =========================
+   WHATSAPP
+========================= */
+
+.whatsapp{
+
+  position:fixed;
+
+  right:15px;
+
+  bottom:96px;
+
+  width:52px;
+  height:52px;
+
+  background:#25D366;
+
+  border-radius:50%;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  color:white;
+
+  font-size:27px;
+
+  text-decoration:none;
+
+  z-index:500;
+
+  box-shadow:
+    0 4px 10px rgba(0,0,0,.25);
+
+}
+
+
+/* =========================
+   BOTTOM NAV
+========================= */
+
+#bottomNav{
+
+  position:fixed;
+
+  bottom:0;
+  left:0;
+
+  width:100%;
+
+  height:78px;
+
+  background:#0b0b0b;
+
+  display:flex;
+
+  justify-content:space-around;
+
+  align-items:center;
+
+  z-index:1000;
+
+  padding:5px 4px;
+
+  border-radius:20px 20px 0 0;
+
+  box-shadow:
+    0 -3px 15px rgba(0,0,0,.20);
+
+}
+
+
+.navBtn{
+
+  width:19%;
+
+  height:62px;
+
+  color:#aaa;
+
+  display:flex;
+
+  flex-direction:column;
+
+  align-items:center;
+
+  justify-content:center;
+
+  border-radius:17px;
+
+  cursor:pointer;
+
+  font-size:12px;
+
+  text-align:center;
+
+}
+
+
+.navIcon{
+
+  font-size:24px;
+
+  margin-bottom:3px;
+
+}
+
+
+.navText{
+
+  font-size:11px;
+
+}
+
+
+.navBtn.active{
+
+  background:#1d1d1d;
+
+  color:#f0c94c;
+
+  box-shadow:
+    0 0 13px rgba(220,170,45,.25);
+
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:420px){
+
+  .banner{
+    height:185px;
+  }
+
+  .slogan{
+    font-size:17px;
+  }
+
+  .numberBox{
+    width:105px;
+    height:90px;
+  }
+
+}
+
+
+/* =========================
+   SMALL PHONE
+========================= */
+
+@media(max-width:360px){
+
+  .topHeader{
+    height:100px;
+  }
+
+  #menuBtn{
+    left:13px;
+    top:55px;
+  }
+
+  #userId{
+    left:55px;
+    top:55px;
+    min-width:92px;
+    max-width:105px;
+    font-size:12px;
+  }
+
+  #wallet{
+    top:55px;
+    min-width:110px;
+    font-size:14px;
+  }
+
+  .helpBox{
+    right:8px;
+    top:52px;
+  }
+
+  .banner{
+    height:165px;
+  }
+
+  .actionText{
+    font-size:11px;
+  }
+
+  .actionIcon{
+    width:44px;
+    height:44px;
+    font-size:24px;
+  }
+
+  .numberBox{
+    width:95px;
+    height:85px;
+  }
+
+  .gameNumber{
+    font-size:25px;
+  }
+
+}
+
+
+/* =========================
+   NO DATA
+========================= */
+
+.noData{
+
+  background:white;
+
+  border-radius:18px;
+
+  padding:25px 15px;
+
+  text-align:center;
+
+  color:#777;
+
+  font-weight:bold;
+
+  box-shadow:
+    0 2px 8px rgba(0,0,0,.08);
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================
+     TOP HEADER
+========================= -->
+
+<div class="topHeader">
+
+
+  <!-- MENU -->
+
+  <div id="menuBtn"
+          type="button"
+       onclick="openMenu()">
+
+    ☰
+
+  </div>
+
+
+  <!-- USER -->
+
+  <div id="userId">
+
+    ID: Loading...
+
+  </div>
+
+
+  <!-- WALLET -->
+
+  <div id="wallet"
+       onclick="goWallet()">
+
+    💰 ₹0
+
+  </div>
+
+
+  <!-- HELP -->
+
+  <div class="helpBox"
+       onclick="window.open(
+       'https://api.whatsapp.com/send?phone=919053922906',
+       '_blank'
+       )">
+
+    <span class="helpIcon">
+
+      🎧
+
+    </span>
+
+    Help
+
+  </div>
+
+</div>
+
+
+
+<!-- =========================
+     MAIN
+========================= -->
+
+<div class="main">
+
+
+  <!-- BANNER -->
+
+  <div class="banner">
+
+    <iframe
+      src="frem.html"
+      title="Frem">
+    </iframe>
+
+  </div>
+
+
+
+  <!-- SLOGAN -->
+
+  <div class="slogan">
+
+    किस्मत आपका इंतज़ार कर रही है!
+
+    <span>
+      🍀💵🛡️
+    </span>
+
+    सुरक्षित
+
+  </div>
+
+
+
+  <!-- ACTION BUTTONS -->
+
+  <div class="actionBar">
+
+
+    <div class="actionBtn"
+         onclick="go('deposit.html')">
+
+      <div class="actionIcon">
+        👛
+      </div>
+
+      <div class="actionText">
+        पैसा डालो
+      </div>
+
+    </div>
+
+
+
+    <div class="actionBtn"
+         onclick="go('withdraw.html')">
+
+      <div class="actionIcon">
+        💰
+      </div>
+
+      <div class="actionText">
+        पैसा निकालो
+      </div>
+
+    </div>
+
+
+
+    <div class="actionBtn"
+         onclick="window.open(
+         'https://api.whatsapp.com/send?phone=919053922906',
+         '_blank'
+         )">
+
+      <div class="actionIcon">
+        🟢
+      </div>
+
+      <div class="actionText">
+        WhatsApp
+      </div>
+
+    </div>
+
+
+
+    <div class="actionBtn"
+         onclick="shareApp()">
+
+      <div class="actionIcon">
+        ➤
+      </div>
+
+      <div class="actionText">
+        Telegram
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- GAME LIST -->
+
+  <div
+    class="container"
+    id="container">
+
+  </div>
+
+
+</div>
+
+
+
+<!-- =========================
+     WHATSAPP
+========================= -->
+
+<a
+  class="whatsapp"
+  href="https://api.whatsapp.com/send?phone=919053922906"
+  target="_blank">
+
+  💬
+
+</a>
+
+
+
+<!-- =========================
+     BOTTOM NAV
+========================= -->
+
+<div id="bottomNav">
+
+
+  <div
+    class="navBtn"
+    onclick="go('result.html')">
+
+    <div class="navIcon">
+      ♛
+    </div>
+
+    <div class="navText">
+      Results
+    </div>
+
+  </div>
+
+
+
+  <div
+    class="navBtn"
+    onclick="go('userhistory.html')">
+
+    <div class="navIcon">
+      ◷
+    </div>
+
+    <div class="navText">
+      History
+    </div>
+
+  </div>
+
+
+
+  <div
+    class="navBtn active">
+
+    <div class="navIcon">
+      🎮
+    </div>
+
+    <div class="navText">
+      Home
+    </div>
+
+  </div>
+
+
+
+  <div
+    class="navBtn"
+    onclick="go('chart.html')">
+
+    <div class="navIcon">
+      ◔
+    </div>
+
+    <div class="navText">
+      Chart
+    </div>
+
+  </div>
+
+
+
+  <div
+    class="navBtn"
+    onclick="shareApp()">
+
+    <div class="navIcon">
+      ▷
+    </div>
+
+    <div class="navText">
+      Share
+    </div>
+
+  </div>
+
+
+</div>
+
+
+
+<script>
+
+/* =========================
+   USER
+========================= */
+
+const user =
+  JSON.parse(
+    localStorage.getItem("user")
+  );
+
+
+if(!user){
+
+  window.location.href =
+    "index.html";
+
+}
+
+
+/* =========================
+   SUPABASE
+========================= */
+
+const client =
+  supabase.createClient(
+
+    "https://glhomrlwnwhevunfubog.supabase.co",
+
+    "sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB"
+
+  );
+
+
+/* =========================
+   WALLET
+========================= */
+
+async function loadWallet(){
+
+  try{
+
+    const {
+      data,
+      error
+    } = await client
+
+      .from("login")
+
+      .select("balance")
+
+      .eq("id", user.id)
+
+      .single();
+
+
+    if(error){
+
+      console.log(
+        "WALLET ERROR:",
+        error
+      );
+
+      return;
+
+    }
+
+
+    document
+      .getElementById("userId")
+      .innerText =
+      "ID: " + user.id;
+
+
+    if(data){
+
+      document
+        .getElementById("wallet")
+        .innerText =
+        "💰 ₹" +
+        Number(data.balance || 0);
+
+    }
+
+  }
+
+  catch(error){
+
+    console.log(error);
+
+  }
+
+}
+
+
+/* =========================
+   GAME STATUS
+========================= */
+
+function checkStatus(
+  openTime,
+  closeTime
+){
+
+  if(
+    !openTime ||
+    !closeTime
+  ){
+
+    return false;
+
+  }
+
+
+  let now =
+    new Date();
+
+
+  const [oh,om] =
+    openTime.split(":");
+
+
+  const [ch,cm] =
+    closeTime.split(":");
+
+
+  let open =
+    new Date();
+
+
+  open.setHours(
+    Number(oh),
+    Number(om),
+    0,
+    0
+  );
+
+
+  let close =
+    new Date();
+
+
+  close.setHours(
+    Number(ch),
+    Number(cm),
+    0,
+    0
+  );
+
+
+  if(close < open){
+
+    close.setDate(
+      close.getDate() + 1
+    );
+
+
+    if(now < open){
+
+      now.setDate(
+        now.getDate() + 1
+      );
+
+    }
+
+  }
+
+
+  return (
+    now >= open &&
+    now <= close
+  );
+
+}
+
+
+/* =========================
+   LOAD GAMES
+========================= */
+
+async function loadButtons(){
+
+  const container =
+    document.getElementById(
+      "container"
+    );
+
+
+  container.innerHTML = `
+
+    <div class="noData">
+      Loading games...
+    </div>
+
+  `;
+
+
+  try{
+
+    const {
+      data,
+      error
+    } = await client
+
+      .from("Game result")
+
+      .select(
+        "name, number, open, close"
+      );
+
+
+    if(error){
+
+      console.log(
+        "GAME ERROR:",
+        error
+      );
+
+
+      container.innerHTML = `
+
+        <div class="noData">
+          Game data load nahi hua
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    if(
+      !data ||
+      data.length === 0
+    ){
+
+      container.innerHTML = `
+
+        <div class="noData">
+          No games found
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+/* =========================
+   SORT
+========================= */
+
+data.sort((a, b) => {
+
+  const aOpen = checkStatus(a.open, a.close);
+  const bOpen = checkStatus(b.open, b.close);
+
+  if (aOpen && !bOpen) return -1;
+
+  if (!aOpen && bOpen) return 1;
+
+  return 0;
+
+});
+
+
+container.innerHTML = "";
+
+
+/* =========================
+   CREATE CARDS
+========================= */
+
+data.forEach(item=>{
+
+
+      const isOpen =
+        checkStatus(
+          item.open,
+          item.close
+        );
+
+
+      const btn =
+        document.createElement(
+          "div"
+        );
+
+
+      btn.className =
+        "btn";
+
+
+      btn.innerHTML = `
+
+        <div class="gameTop">
+
+          <div class="gameTimeLabel">
+
+            OPEN:
+
+            <span>
+              ${item.open || "--"}
+            </span>
+
+          </div>
+
+
+          <div class="gameTimeLabel">
+
+            CLOSE:
+
+            <span>
+              ${item.close || "--"}
+            </span>
+
+          </div>
+
+        </div>
+
+
+
+        <div class="gameName">
+
+          ${item.name || "Game"}
+
+          ${isOpen ? " 🔥" : ""}
+
+        </div>
+
+
+
+        <div class="gameNumberRow">
+
+
+          <div class="numberBox">
+
+  <div class="gameNumber">
+
+    ${getKalResult(item.name)}
+
+  </div>
+
+  <div class="numberLabel">
+
+    कल
+
+  </div>
+
+
+
+          </div>
+
+
+
+          <div class="arrow">
+
+            ›
+
+          </div>
+
+
+
+          <div class="numberBox">
+
+            <div class="gameNumber">
+
+            ${item.number || "XX"}
+
+            </div>
+
+            <div class="numberLabel">
+
+              आज
+
+            </div>
+
+          </div>
+
+
+        </div>
+
+
+
+        <div class="statusBox">
+
+          ${
+            isOpen
+            ? "खेलें"
+            : "बंद"
+          }
+
+        </div>
+
+      `;
+
+
+      /* =========================
+         OPEN GAME
+      ========================= */
+
+      if(isOpen){
+
+        btn.onclick =
+          ()=>{
+
+            localStorage.setItem(
+              "market",
+              item.name
+            );
+
+
+            window.location.href =
+              "game.html";
+
+          };
+
+      }
+
+      else{
+
+        btn.style.opacity =
+          "0.70";
+
+      }
+
+
+      container.appendChild(
+        btn
+      );
+
+    });
+
+  }
+
+  catch(error){
+
+    console.log(error);
+
+
+    container.innerHTML = `
+
+      <div class="noData">
+        Something went wrong
+      </div>
+
+    `;
+
+  }
+
+}
+
+
+/* =========================
+   NAVIGATION
+========================= */
+
+function go(page){
+
+  window.location.href =
+    page;
+
+}
+
+
+/* =========================
+   SHARE
+========================= */
+
+function shareApp(){
+
+  if(
+    navigator.share
+  ){
+
+    navigator.share({
+
+      title:"My App",
+
+      text:"Join now",
+
+      url:
+        window.location.href
+
+    });
+
+  }
+
+}
+
+
+/* =========================
+   WALLET PAGE
+========================= */
+
+function goWallet(){
+
+  window.location.href =
+    "wallet.html";
+
+}
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+function logout(){
+
+  localStorage.removeItem(
+    "user"
+  );
+
+
+  window.location.href =
+    "index.html";
+
+}
+
+
+/* =========================
+   START
+========================= */
+
+loadWallet();
+
+loadButtons();
+
+
+/* =========================
+   AUTO REFRESH
+========================= */
+
+setInterval(
+  ()=>{
+
+    loadButtons();
+
+    loadWallet();
+
+  },
+  60000
+);
+function getKalResult(marketName) {
+  const results = JSON.parse(
+    localStorage.getItem("yesterdayResults") || "{}"
+  );
+
+  return results[marketName] || "**";
+}
+      console.log(
+  "KAL RESULTS:",
+  localStorage.getItem("yesterdayResults")
+);
+</script>
+
+<script src="menu.js"></script>
+
+</body>
+</html>
+</body>
+
+</html>

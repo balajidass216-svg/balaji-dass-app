@@ -1,0 +1,1868 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Admin Wining</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Arial, sans-serif;
+    background:#f4f6f9;
+    color:#222;
+}
+
+.header{
+    background:linear-gradient(135deg,#111827,#1f2937);
+    color:white;
+    padding:18px;
+    text-align:center;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+    padding:18px;
+}
+
+/* ================= FILTER BOX ================= */
+
+.filter-box{
+    background:white;
+    padding:18px;
+    border-radius:14px;
+    box-shadow:0 4px 15px rgba(0,0,0,.08);
+    margin-bottom:18px;
+}
+
+.filter-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr auto;
+    gap:12px;
+}
+
+.field label{
+    display:block;
+    font-size:13px;
+    font-weight:bold;
+    margin-bottom:6px;
+    color:#555;
+}
+
+.field select,
+.field input{
+    width:100%;
+    padding:12px;
+    border:1px solid #ddd;
+    border-radius:9px;
+    outline:none;
+    font-size:14px;
+    background:#fff;
+}
+
+.field input:focus,
+.field select:focus{
+    border-color:#2563eb;
+}
+
+.save-btn{
+    border:none;
+    border-radius:9px;
+    padding:12px 18px;
+    background:#2563eb;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    align-self:end;
+}
+
+.save-btn:hover{
+    background:#1d4ed8;
+}
+
+/* ================= RESULT INFO ================= */
+
+.result-info{
+    background:white;
+    border-radius:14px;
+    padding:16px;
+    margin-bottom:18px;
+    box-shadow:0 4px 15px rgba(0,0,0,.08);
+    text-align:center;
+}
+
+.result-title{
+    font-size:13px;
+    color:#777;
+    margin-bottom:5px;
+}
+
+.result-number{
+    font-size:34px;
+    font-weight:bold;
+}
+
+/* ================= STATS ================= */
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:12px;
+    margin-bottom:18px;
+}
+
+.stat{
+    background:white;
+    border-radius:12px;
+    padding:15px;
+    text-align:center;
+    box-shadow:0 3px 12px rgba(0,0,0,.07);
+}
+
+.stat-title{
+    font-size:12px;
+    color:#777;
+    font-weight:bold;
+    margin-bottom:6px;
+}
+
+.stat-value{
+    font-size:23px;
+    font-weight:bold;
+}
+
+/* ================= WINING LIST ================= */
+
+.wining-list{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.wining-card{
+    background:white;
+    border-radius:14px;
+    padding:16px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+    border-left:5px solid #f59e0b;
+}
+
+.wining-card.accepted{
+    border-left-color:#16a34a;
+}
+
+.wining-card.cancelled{
+    border-left-color:#dc2626;
+    opacity:.8;
+}
+
+.card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:12px;
+}
+
+.market-name{
+    font-size:18px;
+    font-weight:bold;
+}
+
+.status{
+    padding:5px 10px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:bold;
+}
+
+.status.pending{
+    background:#fff7ed;
+    color:#c2410c;
+}
+
+.status.accept{
+    background:#dcfce7;
+    color:#15803d;
+}
+
+.status.cancel{
+    background:#fee2e2;
+    color:#b91c1c;
+}
+
+.info-grid{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:10px;
+    margin-bottom:14px;
+}
+
+.info-item{
+    background:#f8fafc;
+    padding:10px;
+    border-radius:9px;
+}
+
+.info-label{
+    font-size:10px;
+    color:#777;
+    margin-bottom:3px;
+}
+
+.info-value{
+    font-size:14px;
+    font-weight:bold;
+}
+
+.winning-amount{
+    color:#15803d;
+    font-size:17px;
+}
+
+/* ================= BUTTONS ================= */
+
+.actions{
+    display:flex;
+    gap:10px;
+}
+
+.accept-btn,
+.cancel-btn{
+    border:none;
+    padding:10px 15px;
+    border-radius:8px;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.accept-btn{
+    background:#16a34a;
+}
+
+.accept-btn:hover{
+    background:#15803d;
+}
+
+.cancel-btn{
+    background:#dc2626;
+}
+
+.cancel-btn:hover{
+    background:#b91c1c;
+}
+
+/* ================= EMPTY ================= */
+
+.empty{
+    background:white;
+    border-radius:14px;
+    padding:35px;
+    text-align:center;
+    color:#777;
+    box-shadow:0 3px 12px rgba(0,0,0,.07);
+}
+
+/* ================= MOBILE ================= */
+
+@media(max-width:800px){
+
+    .filter-grid{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .save-btn{
+        width:100%;
+    }
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .info-grid{
+        grid-template-columns:repeat(3,1fr);
+    }
+}
+
+@media(max-width:500px){
+
+    .container{
+        padding:12px;
+    }
+
+    .filter-grid{
+        grid-template-columns:1fr;
+    }
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .stat:last-child{
+        grid-column:span 2;
+    }
+
+    .info-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .card-top{
+        align-items:flex-start;
+    }
+
+    .actions{
+        flex-direction:column;
+    }
+
+    .accept-btn,
+    .cancel-btn{
+        width:100%;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    🏆 Admin Wining
+</div>
+
+<div class="container">
+
+    <!-- ================= FILTER ================= -->
+
+    <div class="filter-box">
+
+        <div class="filter-grid">
+
+            <div class="field">
+                <label>Date</label>
+                <select id="dateSelect">
+                    <option value="">Select Date</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label>Market</label>
+                <select id="marketSelect">
+                    <option value="">Select Market</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label>Result (00-99)</label>
+                <input
+                    type="text"
+                    id="resultInput"
+                    maxlength="2"
+                    placeholder="90"
+                    inputmode="numeric"
+                >
+            </div>
+
+            <button
+                class="save-btn"
+                onclick="saveResultAndFind()">
+                SAVE RESULT & FIND WINING
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= RESULT ================= -->
+
+    <div class="result-info">
+
+        <div class="result-title">
+            SELECTED RESULT
+        </div>
+
+        <div
+            id="resultNumber"
+            class="result-number">
+            --
+        </div>
+
+    </div>
+
+
+    <!-- ================= STATS ================= -->
+
+    <div class="stats">
+
+        <div class="stat">
+
+            <div class="stat-title">
+                PENDING
+            </div>
+
+            <div
+                id="pendingCount"
+                class="stat-value">
+                0
+            </div>
+
+        </div>
+
+
+        <!-- NEW BAKI WINING -->
+
+        <div class="stat">
+
+            <div class="stat-title">
+                BAKI WINING
+            </div>
+
+            <div
+                id="pendingAmount"
+                class="stat-value">
+                ₹0
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-title">
+                PAID
+            </div>
+
+            <div
+                id="paidAmount"
+                class="stat-value">
+                ₹0
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-title">
+                ACCEPT
+            </div>
+
+            <div
+                id="acceptCount"
+                class="stat-value">
+                0
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-title">
+                CANCEL
+            </div>
+
+            <div
+                id="cancelCount"
+                class="stat-value">
+                0
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= WINING LIST ================= -->
+
+    <div
+        id="winingList"
+        class="wining-list">
+
+        <div class="empty">
+            Date aur Market select karke result save karein.
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* ================= SUPABASE ================= */
+
+const supabaseClient = supabase.createClient(
+
+    "https://glhomrlwnwhevunfubog.supabase.co",
+
+    "sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB"
+
+);
+
+
+/* ================= GLOBAL ================= */
+
+let allWining = [];
+let allHistory = [];
+let selectedResult = "";
+
+
+/* ================= START ================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    async () => {
+
+        await loadDates();
+
+        await loadMarkets();
+
+        await loadWining();
+
+    }
+);
+
+
+/* ================= LOAD DATES ================= */
+
+async function loadDates(){
+
+    const { data, error } =
+        await supabaseClient
+
+        .from("history")
+
+        .select("typing")
+
+        .not("typing","is",null);
+
+
+    if(error){
+
+        console.error(error);
+
+        return;
+
+    }
+
+
+    const dates = [
+        ...new Set(
+            (data || [])
+            .map(row => row.typing)
+            .filter(Boolean)
+        )
+    ].sort().reverse();
+
+
+    const select =
+        document.getElementById("dateSelect");
+
+
+    select.innerHTML =
+        `<option value="">Select Date</option>`;
+
+
+    dates.forEach(date => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = date;
+
+        option.textContent =
+            formatDate(date);
+
+        select.appendChild(option);
+
+    });
+
+}
+
+
+/* ================= LOAD MARKETS ================= */
+
+async function loadMarkets(){
+
+    const { data, error } =
+        await supabaseClient
+
+        .from("history")
+
+        .select("market")
+
+        .not("market","is",null);
+
+
+    if(error){
+
+        console.error(error);
+
+        return;
+
+    }
+
+
+    const markets = [
+        ...new Set(
+            (data || [])
+            .map(row => row.market)
+            .filter(Boolean)
+        )
+    ].sort();
+
+
+    const select =
+        document.getElementById("marketSelect");
+
+
+    select.innerHTML =
+        `<option value="">Select Market</option>`;
+
+
+    markets.forEach(market => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = market;
+
+        option.textContent = market;
+
+        select.appendChild(option);
+
+    });
+
+}
+
+
+/* ================= SAVE RESULT ================= */
+
+async function saveResultAndFind(){
+
+    const date =
+        document.getElementById("dateSelect").value;
+
+    const market =
+        document.getElementById("marketSelect").value;
+
+    const result =
+        document.getElementById("resultInput").value.trim();
+
+
+    if(!date){
+
+        alert("Date select karo.");
+
+        return;
+
+    }
+
+
+    if(!market){
+
+        alert("Market select karo.");
+
+        return;
+
+    }
+
+
+    if(!/^\d{2}$/.test(result)){
+
+        alert("Result 00 se 99 ke beech 2 digit hona chahiye.");
+
+        return;
+
+    }
+
+
+    selectedResult = result;
+
+
+    document.getElementById("resultNumber")
+        .textContent = result;
+
+
+    const saved =
+        await saveGameResult(
+            date,
+            market,
+            result
+        );
+
+
+    if(!saved){
+
+        return;
+
+    }
+
+
+    await createWiningRows(
+        date,
+        market,
+        result
+    );
+
+
+    await loadWining();
+
+}
+
+
+/* ================= SAVE GAME RESULT ================= */
+
+async function saveGameResult(
+    date,
+    market,
+    result
+){
+
+    const { data, error } =
+        await supabaseClient
+
+        .from("Game result")
+
+        .select("id")
+
+        .eq("name", market)
+
+        .eq("date", date)
+        .limit(1);
+
+
+    if(error){
+
+        console.error(error);
+
+        alert(
+            "Game result read error: " +
+            error.message
+        );
+
+        return false;
+
+    }
+
+
+    if(data && data.length > 0){
+
+        const { error:updateError } =
+            await supabaseClient
+
+            .from("Game result")
+
+            .update({
+                number: result
+            })
+
+            .eq("id", data[0].id);
+
+
+        if(updateError){
+
+            console.error(updateError);
+
+            alert(
+                "Result save error: " +
+                updateError.message
+            );
+
+            return false;
+
+        }
+
+    }else{
+
+        const { error:insertError } =
+            await supabaseClient
+
+            .from("Game result")
+
+            .insert({
+
+                name: market,
+
+                number: result,
+
+                date: date
+
+            });
+
+
+        if(insertError){
+
+            console.error(insertError);
+
+            alert(
+                "Result insert error: " +
+                insertError.message
+            );
+
+            return false;
+
+        }
+
+    }
+
+
+    return true;
+
+}
+
+
+/* ================= CREATE WINING ROWS ================= */
+
+async function createWiningRows(
+    date,
+    market,
+    result
+){
+
+    const { data:historyData, error } =
+        await supabaseClient
+
+        .from("history")
+
+        .select("*")
+
+        .eq("market", market)
+        .eq("typing", date);
+
+
+    if(error){
+
+        console.error(error);
+
+        alert(
+            "History load error: " +
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    if(!historyData || historyData.length === 0){
+
+        return;
+
+    }
+
+
+    for(const history of historyData){
+
+        let items;
+
+
+        try{
+
+            items =
+                typeof history.data === "string"
+
+                ? JSON.parse(history.data)
+
+                : history.data;
+
+        }catch(e){
+
+            console.error(
+                "Invalid history data:",
+                history.id
+            );
+
+            continue;
+
+        }
+
+
+        if(!Array.isArray(items)){
+
+            continue;
+
+        }
+
+
+        for(const item of items){
+
+            const number =
+                String(item.number || "").trim();
+
+            const betAmount =
+                Number(item.amount || 0);
+
+
+            const winning =
+                calculateWinning(
+                    number,
+                    result,
+                    betAmount
+                );
+
+
+            if(winning <= 0){
+
+                continue;
+
+            }
+
+
+            /* DUPLICATE CHECK */
+
+            const { data:existing, error:existingError } =
+                await supabaseClient
+
+                .from("wining")
+
+                .select("id")
+
+                .eq("history_id", history.id)
+
+                .eq("number", number)
+                .limit(1);
+
+
+            if(existingError){
+
+                console.error(existingError);
+
+                continue;
+
+            }
+
+
+            if(existing && existing.length > 0){
+
+                continue;
+
+            }
+
+
+            const gameType =
+                (
+                    number.startsWith("A") ||
+                    number.startsWith("B")
+                )
+                ? "Hurf"
+                : "Number";
+
+
+            const { error:insertError } =
+                await supabaseClient
+
+                .from("wining")
+
+                .insert({
+
+                    user_id: history.user_id,
+
+                    market: history.market,
+
+                    number: number,
+
+                    bet_amount: betAmount,
+
+                    amount: winning,
+
+                    status: "pending",
+
+                    history_id: history.id,
+
+                    game_type: gameType,
+
+                    created_at:
+                        history.created_at || null
+
+                });
+
+
+            if(insertError){
+
+                console.error(
+                    "Wining insert error:",
+                    insertError
+                );
+
+            }
+
+        }
+
+    }
+
+}
+
+
+/* ================= WINNING CALCULATION ================= */
+
+function calculateWinning(
+    number,
+    result,
+    betAmount
+){
+
+    number =
+        String(number || "")
+        .trim()
+        .toUpperCase();
+
+    result =
+        String(result || "")
+        .trim();
+
+
+    if(!/^\d{2}$/.test(result)){
+
+        return 0;
+
+    }
+
+
+    /* EXACT NUMBER */
+
+    if(number === result){
+
+        return betAmount * 92;
+
+    }
+
+
+    /* A + FIRST DIGIT */
+
+    if(
+        number ===
+        "A" + result.charAt(0)
+    ){
+
+        return betAmount * 9;
+
+    }
+
+
+    /* B + SECOND DIGIT */
+
+    if(
+        number ===
+        "B" + result.charAt(1)
+    ){
+
+        return betAmount * 9;
+
+    }
+
+
+    return 0;
+
+}
+
+
+/* ================= LOAD WINING ================= */
+
+async function loadWining(){
+
+    const { data:winingData, error } =
+        await supabaseClient
+
+        .from("wining")
+
+        .select("*")
+
+        .order("id", {
+            ascending:false
+        });
+
+
+    if(error){
+
+        console.error(error);
+
+        document.getElementById(
+            "winingList"
+        ).innerHTML =
+
+            `<div class="empty">
+                Wining load error:<br>
+                ${escapeHtml(error.message)}
+            </div>`;
+
+        return;
+
+    }
+
+
+    allWining =
+        winingData || [];
+
+
+    /* LOAD HISTORY */
+
+    const historyIds =
+        [
+            ...new Set(
+                allWining
+                .map(row => row.history_id)
+                .filter(id => id != null)
+            )
+        ];
+
+
+    allHistory = [];
+
+
+    if(historyIds.length > 0){
+
+        const { data:historyData } =
+            await supabaseClient
+
+            .from("history")
+
+            .select(
+                "id,market,typing,created_at"
+            )
+
+            .in("id", historyIds);
+
+
+        allHistory =
+            historyData || [];
+
+    }
+
+
+    renderWining();
+
+}
+
+
+/* ================= RENDER ================= */
+
+function renderWining(){
+
+    const date =
+        document.getElementById(
+            "dateSelect"
+        ).value;
+
+    const market =
+        document.getElementById(
+            "marketSelect"
+        ).value;
+
+
+    let rows =
+        allWining.map(row => {
+
+            const history =
+                allHistory.find(
+                    h =>
+                        String(h.id) ===
+                        String(row.history_id)
+                );
+
+
+            return {
+
+                ...row,
+
+                displayMarket:
+                    row.market ||
+                    history?.market ||
+                    "",
+
+                displayDate:
+                    history?.typing ||
+                    (
+                        row.created_at
+                        ? getLocalDate(row.created_at)
+                        : ""
+                    )
+
+            };
+
+        });
+
+
+    /* DATE FILTER */
+
+    if(date){
+
+        rows =
+            rows.filter(
+                row =>
+                    row.displayDate === date
+            );
+
+    }
+
+
+    /* MARKET FILTER */
+
+    if(market){
+
+        rows =
+            rows.filter(
+                row =>
+                    String(
+                        row.displayMarket
+                    ).toLowerCase() ===
+                    String(market).toLowerCase()
+            );
+
+    }
+
+
+    /* PENDING FIRST */
+
+    rows.sort(
+        (a,b) => {
+
+            const aPending =
+                a.status === "pending";
+
+            const bPending =
+                b.status === "pending";
+
+
+            if(aPending && !bPending){
+
+                return -1;
+
+            }
+
+
+            if(!aPending && bPending){
+
+                return 1;
+
+            }
+
+
+            return Number(b.id) -
+                   Number(a.id);
+
+        }
+    );
+
+
+    /* ================= STATS ================= */
+
+    const pending =
+        rows.filter(
+            row =>
+                row.status === "pending"
+        );
+
+
+    const accepted =
+        rows.filter(
+            row =>
+                row.status === "accepted"
+        );
+
+
+    const cancelled =
+        rows.filter(
+            row =>
+                row.status === "cancelled"
+        );
+
+
+    /* PENDING COUNT */
+
+    document.getElementById(
+        "pendingCount"
+    ).textContent =
+        pending.length;
+
+
+    /* ================= BAKI WINING ================= */
+
+    const pendingAmount =
+        pending.reduce(
+            (sum, row) =>
+                sum +
+                Number(row.amount || 0),
+            0
+        );
+
+
+    document.getElementById(
+        "pendingAmount"
+    ).textContent =
+        "₹" +
+        pendingAmount.toLocaleString(
+            "en-IN"
+        );
+
+
+    /* PAID */
+
+    const paidAmount =
+        accepted.reduce(
+            (sum,row) =>
+                sum +
+                Number(row.amount || 0),
+            0
+        );
+
+
+    document.getElementById(
+        "paidAmount"
+    ).textContent =
+        "₹" +
+        paidAmount.toLocaleString(
+            "en-IN"
+        );
+
+
+    /* ACCEPT COUNT */
+
+    document.getElementById(
+        "acceptCount"
+    ).textContent =
+        accepted.length;
+
+
+    /* CANCEL COUNT */
+
+    document.getElementById(
+        "cancelCount"
+    ).textContent =
+        cancelled.length;
+
+
+    /* ================= EMPTY ================= */
+
+    const list =
+        document.getElementById(
+            "winingList"
+        );
+
+
+    if(rows.length === 0){
+
+        list.innerHTML =
+            `<div class="empty">
+                Is date aur market ke liye
+                koi wining nahi mili.
+            </div>`;
+
+        return;
+
+    }
+
+
+    /* ================= CARDS ================= */
+
+    list.innerHTML =
+        rows.map(
+            row =>
+                renderCard(row)
+        ).join("");
+
+}
+
+
+/* ================= CARD ================= */
+
+function renderCard(row){
+
+    const status =
+        String(
+            row.status || "pending"
+        ).toLowerCase();
+
+
+    let statusHtml;
+
+
+    if(status === "accepted"){
+
+        statusHtml =
+            `<span class="status accept">
+                ACCEPT
+            </span>`;
+
+    }else if(status === "cancelled"){
+
+        statusHtml =
+            `<span class="status cancel">
+                CANCEL
+            </span>`;
+
+    }else{
+
+        statusHtml =
+            `<span class="status pending">
+                PENDING
+            </span>`;
+
+    }
+
+
+    let buttons = "";
+
+
+    if(status === "pending"){
+
+        buttons =
+            `
+            <div class="actions">
+
+                <button
+                    class="accept-btn"
+                    onclick="acceptWining(${row.id})">
+                    ✓ ACCEPT
+                </button>
+
+                <button
+                    class="cancel-btn"
+                    onclick="cancelWining(${row.id})">
+                    ✕ CANCEL
+                </button>
+
+            </div>
+            `;
+
+    }
+
+
+    return `
+
+        <div class="wining-card ${status}">
+
+            <div class="card-top">
+
+                <div class="market-name">
+                    ${escapeHtml(
+                        row.displayMarket || "-"
+                    )}
+                </div>
+
+                ${statusHtml}
+
+            </div>
+
+
+            <div class="info-grid">
+
+                <div class="info-item">
+
+                    <div class="info-label">
+                        USER ID
+                    </div>
+
+                    <div class="info-value">
+                        ${escapeHtml(
+                            String(
+                                row.user_id || "-"
+                            )
+                        )}
+                    </div>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <div class="info-label">
+                        HISTORY ID
+                    </div>
+
+                    <div class="info-value">
+                        ${escapeHtml(
+                            String(
+                                row.history_id || "-"
+                            )
+                        )}
+                    </div>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <div class="info-label">
+                        NUMBER
+                    </div>
+
+                    <div class="info-value">
+                        ${escapeHtml(
+                            String(
+                                row.number || "-"
+                            )
+                        )}
+                    </div>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <div class="info-label">
+                        BET
+                    </div>
+
+                    <div class="info-value">
+                        ₹${Number(
+                            row.bet_amount || 0
+                        ).toLocaleString("en-IN")}
+                    </div>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <div class="info-label">
+                        GAME
+                    </div>
+
+                    <div class="info-value">
+                        ${escapeHtml(
+                            String(
+                                row.game_type || "-"
+                            )
+                        )}
+                    </div>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <div class="info-label">
+                        WINNING
+                    </div>
+
+                    <div class="info-value winning-amount">
+                        ₹${Number(
+                            row.amount || 0
+                        ).toLocaleString("en-IN")}
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            ${buttons}
+
+        </div>
+
+    `;
+
+}
+
+
+/* ================= ACCEPT ================= */
+
+async function acceptWining(id){
+
+    const row =
+        allWining.find(
+            item =>
+                Number(item.id) ===
+                Number(id)
+        );
+
+
+    if(!row){
+
+        alert("Wining record nahi mili.");
+
+        return;
+
+    }
+
+
+    if(row.status !== "pending"){
+
+        alert(
+            "Ye wining already process ho chuki hai."
+        );
+
+        return;
+
+    }
+
+
+    const confirmAccept =
+        confirm(
+            "₹" +
+            Number(
+                row.amount || 0
+            ).toLocaleString("en-IN") +
+            " winning ACCEPT karni hai?"
+        );
+
+
+    if(!confirmAccept){
+
+        return;
+
+    }
+
+
+    const { error } =
+        await supabaseClient
+
+        .from("wining")
+
+        .update({
+            status: "accepted"
+        })
+
+        .eq("id", id)
+        .eq("status", "pending");
+
+
+    if(error){
+
+        console.error(error);
+
+        alert(
+            "Accept error: " +
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    alert(
+        "Winning ACCEPT ho gayi."
+    );
+
+
+    await loadWining();
+
+}
+
+
+/* ================= CANCEL ================= */
+
+async function cancelWining(id){
+
+    const row =
+        allWining.find(
+            item =>
+                Number(item.id) ===
+                Number(id)
+        );
+
+
+    if(!row){
+
+        alert("Wining record nahi mili.");
+
+        return;
+
+    }
+
+
+    if(row.status !== "pending"){
+
+        alert(
+            "Ye wining already process ho chuki hai."
+        );
+
+        return;
+
+    }
+
+
+    const confirmCancel =
+        confirm(
+            "₹" +
+            Number(
+                row.amount || 0
+            ).toLocaleString("en-IN") +
+            " winning CANCEL karni hai?"
+        );
+
+
+    if(!confirmCancel){
+
+        return;
+
+    }
+
+
+    const { error } =
+        await supabaseClient
+
+        .from("wining")
+
+        .update({
+            status: "cancelled"
+        })
+
+        .eq("id", id)
+        .eq("status", "pending");
+
+
+    if(error){
+
+        console.error(error);
+
+        alert(
+            "Cancel error: " +
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    alert(
+        "Winning CANCEL ho gayi."
+    );
+
+
+    await loadWining();
+
+}
+
+
+/* ================= DATE ================= */
+
+function getLocalDate(
+    dateString
+){
+
+    const date =
+        new Date(dateString);
+
+
+    if(isNaN(date.getTime())){
+
+        return "";
+
+    }
+
+
+    const year =
+        date.getFullYear();
+
+    const month =
+        String(
+            date.getMonth() + 1
+        ).padStart(2,"0");
+
+    const day =
+        String(
+            date.getDate()
+        ).padStart(2,"0");
+
+
+    return (
+        year +
+        "-" +
+        month +
+        "-" +
+        day
+    );
+
+}
+
+
+/* ================= FORMAT DATE ================= */
+
+function formatDate(dateString){
+
+    const parts =
+        String(dateString)
+        .split("-");
+
+
+    if(parts.length !== 3){
+
+        return dateString;
+
+    }
+
+
+    return (
+        parts[2] +
+        "-" +
+        parts[1] +
+        "-" +
+        parts[0]
+    );
+
+}
+
+
+/* ================= ESCAPE HTML ================= */
+
+function escapeHtml(value){
+
+    return String(value ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+
+/* ================= FILTER CHANGE ================= */
+
+document
+.getElementById("dateSelect")
+.addEventListener(
+    "change",
+    renderWining
+);
+
+
+document
+.getElementById("marketSelect")
+.addEventListener(
+    "change",
+    renderWining
+);
+
+
+/* ================= RESULT INPUT ================= */
+
+document
+.getElementById("resultInput")
+.addEventListener(
+    "input",
+    function(){
+
+        this.value =
+            this.value
+            .replace(/\D/g,"")
+            .slice(0,2);
+
+    }
+);
+
+</script>
+
+</body>
+</html>

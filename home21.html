@@ -1,0 +1,1768 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Home</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:linear-gradient(135deg,#fff8e1,#fff);
+  color:#222;
+  padding-bottom:80px;
+}
+
+.header{
+  background:linear-gradient(135deg,#d32f2f,#ff6f00);
+  color:white;
+  padding:14px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow:0 3px 10px rgba(0,0,0,.2);
+}
+
+.header-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.logo{
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:23px;
+}
+
+.header-title{
+  font-size:19px;
+  font-weight:bold;
+}
+
+.header-id{
+  font-size:12px;
+  opacity:.9;
+  margin-top:3px;
+}
+
+.wallet{
+  background:white;
+  color:#d32f2f;
+  padding:8px 12px;
+  border-radius:10px;
+  font-weight:bold;
+  font-size:14px;
+}
+
+.banner{
+  margin:12px;
+  height:120px;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 3px 10px rgba(0,0,0,.15);
+  background:white;
+}
+
+.banner iframe{
+  width:100%;
+  height:100%;
+  border:0;
+}
+
+.slogan{
+  text-align:center;
+  font-size:15px;
+  font-weight:bold;
+  color:#d32f2f;
+  margin:12px 0;
+}
+
+.actions{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  padding:0 12px;
+}
+
+.action-btn{
+  border:0;
+  padding:13px 8px;
+  border-radius:10px;
+  background:white;
+  box-shadow:0 3px 9px rgba(0,0,0,.12);
+  font-size:14px;
+  font-weight:bold;
+  color:#333;
+  cursor:pointer;
+}
+
+.action-btn:active{
+  transform:scale(.97);
+}
+
+.games-title{
+  padding:16px 12px 8px;
+  font-size:18px;
+  font-weight:bold;
+  color:#d32f2f;
+}
+
+.games{
+  padding:0 12px;
+}
+
+.game-card{
+  background:white;
+  margin-bottom:10px;
+  border-radius:13px;
+  padding:12px;
+  box-shadow:0 3px 10px rgba(0,0,0,.12);
+  cursor:pointer;
+  transition:.2s;
+}
+
+.game-card:active{
+  transform:scale(.98);
+}
+
+.game-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.game-name{
+  font-size:16px;
+  font-weight:bold;
+  color:#d32f2f;
+}
+
+.game-time{
+  font-size:12px;
+  color:#555;
+}
+
+.game-middle{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:10px;
+}
+
+.result-box{
+  text-align:center;
+  min-width:70px;
+}
+
+.result-number{
+  font-size:22px;
+  font-weight:bold;
+}
+
+.result-label{
+  font-size:11px;
+  color:#777;
+  margin-top:2px;
+}
+
+.countdown{
+  padding:7px 12px;
+  border-radius:8px;
+  background:#e8f5e9;
+  color:#16802b;
+  font-size:14px;
+  font-weight:bold;
+}
+
+.countdown.closed{
+  background:#fff3cd;
+  color:#856404;
+}
+
+.bottom-nav{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  height:65px;
+  background:white;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  box-shadow:0 -3px 12px rgba(0,0,0,.15);
+  z-index:100;
+}
+
+.nav-item{
+  text-align:center;
+  font-size:12px;
+  color:#555;
+  cursor:pointer;
+}
+
+.nav-icon{
+  font-size:21px;
+  display:block;
+  margin-bottom:3px;
+}
+
+.whatsapp{
+  position:fixed;
+  right:16px;
+  bottom:82px;
+  width:50px;
+  height:50px;
+  border-radius:50%;
+  background:#25d366;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:26px;
+  text-decoration:none;
+  box-shadow:0 4px 12px rgba(0,0,0,.25);
+  z-index:99;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- HEADER -->
+
+<div class="header">
+
+  <div class="header-left">
+
+    <div class="logo">
+      🔥
+    </div>
+
+    <div>
+
+      <div class="header-title">
+        BALAJI-DAS
+      </div>
+
+      <div
+        class="header-id"
+        id="userId">
+
+        ID: --
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div class="wallet">
+
+    ₹<span id="walletBalance">0</span>
+
+  </div>
+
+</div>
+
+
+
+<!-- BANNER -->
+
+<div class="banner">
+
+  <iframe
+    src="frem.html">
+  </iframe>
+
+</div>
+
+
+
+<!-- SLOGAN -->
+
+<div class="slogan">
+
+  जय श्री बालाजी महाराज 🙏
+
+</div>
+
+
+
+<!-- ACTIONS -->
+
+<div class="actions">
+
+  <button
+    class="action-btn"
+    onclick="goDeposit()">
+
+    💰 Deposit
+
+  </button>
+
+
+  <button
+    class="action-btn"
+    onclick="goWithdraw()">
+
+    💸 Withdraw
+
+  </button>
+
+
+  <button
+    class="action-btn"
+    onclick="goHistory()">
+
+    📜 History
+
+  </button>
+
+
+  <button
+    class="action-btn"
+    onclick="goProfile()">
+
+    👤 Profile
+
+  </button>
+
+</div>
+
+
+
+<!-- GAMES TITLE -->
+
+<div class="games-title">
+
+  🎮 Games
+
+</div>
+
+
+
+<!-- GAMES -->
+
+<div
+  class="games"
+  id="games">
+
+  <div style="
+    text-align:center;
+    padding:20px;
+    color:#777;
+  ">
+
+    Loading...
+
+  </div>
+
+</div>
+
+
+
+<!-- WHATSAPP -->
+
+<a
+  class="whatsapp"
+  href="https://wa.me/919053922906"
+  target="_blank">
+
+  ☎
+
+</a>
+
+
+
+<!-- BOTTOM NAV -->
+
+<div class="bottom-nav">
+
+  <div
+    class="nav-item"
+    onclick="goHome()">
+
+    <span class="nav-icon">
+      🏠
+    </span>
+
+    Home
+
+  </div>
+
+
+  <div
+    class="nav-item"
+    onclick="goDeposit()">
+
+    <span class="nav-icon">
+      💰
+    </span>
+
+    Deposit
+
+  </div>
+
+
+  <div
+    class="nav-item"
+    onclick="goHistory()">
+
+    <span class="nav-icon">
+      📜
+    </span>
+
+    History
+
+  </div>
+
+
+  <div
+    class="nav-item"
+    onclick="goProfile()">
+
+    <span class="nav-icon">
+      👤
+    </span>
+
+    Profile
+
+  </div>
+
+</div>
+
+
+
+<script>
+
+/* =====================================================
+   SUPABASE
+===================================================== */
+
+const client =
+  supabase.createClient(
+
+    "https://glhomrlwnwhevunfubog.supabase.co",
+
+    "sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB"
+
+  );
+
+
+
+/* =====================================================
+   USER
+===================================================== */
+
+const user =
+  JSON.parse(
+    localStorage.getItem("user")
+  );
+
+
+if(!user){
+
+  window.location.href =
+    "index.html";
+
+}
+
+
+document.getElementById(
+  "userId"
+).innerText =
+  "ID: " +
+  (user?.id || "--");
+
+
+
+/* =====================================================
+   WALLET
+===================================================== */
+
+async function loadWallet(){
+
+  if(!user) return;
+
+
+  const {
+    data,
+    error
+  } = await client
+
+    .from("login")
+
+    .select("balance")
+
+    .eq("id",user.id)
+
+    .single();
+
+
+  if(error){
+
+    console.log(
+      "Wallet error:",
+      error
+    );
+
+    return;
+
+  }
+
+
+  document.getElementById(
+    "walletBalance"
+  ).innerText =
+    Number(
+      data?.balance || 0
+    ).toFixed(2);
+
+}
+
+
+
+/* =====================================================
+   TIME FORMAT
+===================================================== */
+
+function formatTimeAMPM(time){
+
+  if(!time) return "--";
+
+
+  const parts =
+    time.split(":");
+
+
+  let hour =
+    Number(parts[0]);
+
+
+  const minute =
+    Number(parts[1] || 0);
+
+
+  const ampm =
+    hour >= 12
+      ? "PM"
+      : "AM";
+
+
+  hour =
+    hour % 12 || 12;
+
+
+  return (
+
+    String(hour).padStart(2,"0")
+
+    + ":" +
+
+    String(minute).padStart(2,"0")
+
+    + " " +
+
+    ampm
+
+  );
+
+}
+
+
+
+/* =====================================================
+   GAME DAY
+   -----------------------------------------------
+   07:00 AM = NEW DAY
+   06:59:59 AM = OLD DAY
+===================================================== */
+
+function getGameDay(){
+
+  const now =
+    new Date();
+
+
+  /*
+    रात 12 बजे से सुबह 6:59 तक
+    अभी previous game-day चलेगा।
+  */
+
+  if(
+    now.getHours() < 7
+  ){
+
+    now.setDate(
+      now.getDate() - 1
+    );
+
+  }
+
+
+  const year =
+    now.getFullYear();
+
+
+  const month =
+    String(
+      now.getMonth() + 1
+    ).padStart(2,"0");
+
+
+  const day =
+    String(
+      now.getDate()
+    ).padStart(2,"0");
+
+
+  return (
+
+    year +
+    "-" +
+    month +
+    "-" +
+    day
+
+  );
+
+}
+
+
+
+/* =====================================================
+   LOCAL STORAGE KEY
+===================================================== */
+
+function getLocalResultKey(
+  marketName
+){
+
+  return (
+    "kalResult_" +
+    marketName
+  );
+
+}
+
+
+
+/* =====================================================
+   SAVE TODAY RESULT AS KAL
+   -----------------------------------------------
+   यह काम 7 AM के बाद होगा।
+===================================================== */
+
+function saveTodayAsKal(
+  marketName,
+  todayNumber
+){
+
+  if(!marketName) return;
+
+
+  /*
+    ** को कल में save नहीं करना
+  */
+
+  if(
+    !todayNumber ||
+    todayNumber === "**"
+  ){
+
+    return;
+
+  }
+
+
+  const key =
+    getLocalResultKey(
+      marketName
+    );
+
+
+  const gameDay =
+    getGameDay();
+
+
+  const savedData = {
+
+    result:
+      todayNumber,
+
+    gameDay:
+      gameDay
+
+  };
+
+
+  localStorage.setItem(
+
+    key,
+
+    JSON.stringify(
+      savedData
+    )
+
+  );
+
+}
+
+
+
+/* =====================================================
+   GET KAL RESULT
+===================================================== */
+
+function getKalResult(
+  marketName
+){
+
+  if(!marketName){
+
+    return "**";
+
+  }
+
+
+  const key =
+    getLocalResultKey(
+      marketName
+    );
+
+
+  const saved =
+    localStorage.getItem(
+      key
+    );
+
+
+  if(!saved){
+
+    return "**";
+
+  }
+
+
+  try{
+
+    const data =
+      JSON.parse(
+        saved
+      );
+
+
+    return (
+      data.result ||
+      "**"
+    );
+
+  }
+  catch(error){
+
+    return "**";
+
+  }
+
+}
+
+
+
+/* =====================================================
+   PREPARE TODAY / KAL
+===================================================== */
+
+function prepareLocalResults(
+  games
+){
+
+  if(!games ||
+     !games.length){
+
+    return;
+
+  }
+
+
+  const currentGameDay =
+    getGameDay();
+
+
+  games.forEach(
+
+    item => {
+
+      if(!item.name){
+
+        return;
+
+      }
+
+
+      /*
+        अगर किसी पुराने game-day का
+        result पहले save नहीं हुआ है,
+        तो अभी save नहीं करेंगे।
+
+        आज का result Supabase से आएगा।
+      */
+
+      const todayNumber =
+        item.number;
+
+
+      if(
+        todayNumber &&
+        todayNumber !== "**"
+      ){
+
+        /*
+          Current game-day में
+          result save रहेगा।
+
+          अगली बार 7 AM के बाद
+          यही previous result
+          "कल" के रूप में रहेगा।
+        */
+
+        const key =
+          getLocalResultKey(
+            item.name
+          );
+
+
+        const old =
+          localStorage.getItem(
+            key
+          );
+
+
+        /*
+          अगर saved result का gameDay
+          current game-day से अलग है,
+          तो नया result kal में save करें।
+        */
+
+        if(old){
+
+          try{
+
+            const oldData =
+              JSON.parse(old);
+
+
+            if(
+              oldData.gameDay !==
+              currentGameDay
+            ){
+
+              saveTodayAsKal(
+
+                item.name,
+
+                item.number
+
+              );
+
+            }
+
+          }
+          catch(e){
+
+            saveTodayAsKal(
+
+              item.name,
+
+              item.number
+
+            );
+
+          }
+
+        }
+        else{
+
+          /*
+            पहली बार result मिलने पर
+            local में save.
+          */
+
+          saveTodayAsKal(
+
+            item.name,
+
+            item.number
+
+          );
+
+        }
+
+      }
+
+    }
+
+  );
+
+}
+
+
+
+/* =====================================================
+   CLOSE DATE
+===================================================== */
+
+function getCloseDate(
+  closeTime
+){
+
+  if(!closeTime){
+
+    return null;
+
+  }
+
+
+  const parts =
+    closeTime.split(":");
+
+
+  const hour =
+    Number(parts[0]);
+
+
+  const minute =
+    Number(parts[1] || 0);
+
+
+  const gameDay =
+    getGameDay();
+
+
+  const [
+    year,
+    month,
+    day
+  ] =
+    gameDay
+      .split("-")
+      .map(Number);
+
+
+  const close =
+    new Date(
+
+      year,
+
+      month - 1,
+
+      day,
+
+      hour,
+
+      minute,
+
+      0,
+
+      0
+
+    );
+
+
+  /*
+    00:00 से 06:59 तक की timing
+    अगले calendar date की morning होगी।
+  */
+
+  if(
+    hour < 7
+  ){
+
+    close.setDate(
+      close.getDate() + 1
+    );
+
+  }
+
+
+  return close;
+
+}
+
+
+
+/* =====================================================
+   REMAINING TIME
+===================================================== */
+
+function getRemainingTime(
+  closeTime
+){
+
+  const close =
+    getCloseDate(
+      closeTime
+    );
+
+
+  if(!close){
+
+    return {
+
+      closed:true,
+
+      text:"बंद",
+
+      seconds:0
+
+    };
+
+  }
+
+
+  const now =
+    new Date();
+
+
+  const diff =
+    Math.floor(
+
+      (
+        close.getTime() -
+        now.getTime()
+      ) / 1000
+
+    );
+
+
+  /*
+    जैसे ही close time cross होगा,
+    तुरंत बंद।
+  */
+
+  if(diff <= 0){
+
+    return {
+
+      closed:true,
+
+      text:"बंद",
+
+      seconds:0
+
+    };
+
+  }
+
+
+  let remaining =
+    diff;
+
+
+  const hours =
+    Math.floor(
+      remaining / 3600
+    );
+
+
+  remaining %=
+    3600;
+
+
+  const minutes =
+    Math.floor(
+      remaining / 60
+    );
+
+
+  const seconds =
+    remaining % 60;
+
+
+  const text =
+
+    String(hours)
+      .padStart(2,"0")
+
+    + ":" +
+
+    String(minutes)
+      .padStart(2,"0")
+
+    + ":" +
+
+    String(seconds)
+      .padStart(2,"0");
+
+
+  return {
+
+    closed:false,
+
+    text:text,
+
+    seconds:diff
+
+  };
+
+}
+
+
+
+/* =====================================================
+   LOAD GAMES
+===================================================== */
+
+async function loadButtons(){
+
+  const gamesBox =
+    document.getElementById(
+      "games"
+    );
+
+
+  const {
+    data,
+    error
+  } = await client
+
+    .from("Game result")
+
+    .select(
+      "name, number, open, close"
+    );
+
+
+  if(error){
+
+    console.log(
+      "Game error:",
+      error
+    );
+
+
+    gamesBox.innerHTML = `
+
+      <div style="
+        text-align:center;
+        padding:20px;
+        color:red;
+      ">
+
+        Games load नहीं हो पाई।
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  if(
+    !data ||
+    !data.length
+  ){
+
+    gamesBox.innerHTML = `
+
+      <div style="
+        text-align:center;
+        padding:20px;
+        color:#777;
+      ">
+
+        कोई game उपलब्ध नहीं है।
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+
+
+  /*
+    सबसे पहले local result system
+    prepare करें।
+  */
+
+  prepareLocalResults(
+    data
+  );
+
+
+
+  /* =================================================
+     SORT
+  ================================================= */
+
+  const games =
+    [...data];
+
+
+  games.sort(
+
+    (a,b) => {
+
+      const aTime =
+        getRemainingTime(
+          a.close
+        );
+
+
+      const bTime =
+        getRemainingTime(
+          b.close
+        );
+
+
+      if(
+        aTime.closed &&
+        !bTime.closed
+      ){
+
+        return 1;
+
+      }
+
+
+      if(
+        !aTime.closed &&
+        bTime.closed
+      ){
+
+        return -1;
+
+      }
+
+
+      if(
+        !aTime.closed &&
+        !bTime.closed
+      ){
+
+        return (
+          aTime.seconds -
+          bTime.seconds
+        );
+
+      }
+
+
+      return 0;
+
+    }
+
+  );
+
+
+
+  gamesBox.innerHTML =
+    "";
+
+
+
+  /* =================================================
+     CREATE CARDS
+  ================================================= */
+
+  games.forEach(
+
+    item => {
+
+      const timeInfo =
+        getRemainingTime(
+          item.close
+        );
+
+
+      const card =
+        document.createElement(
+          "div"
+        );
+
+
+      card.className =
+        "game-card";
+
+
+      card.setAttribute(
+        "data-close",
+        item.close || ""
+      );
+
+
+      /*
+        बंद game हल्की रहेगी।
+      */
+
+      if(
+        timeInfo.closed
+      ){
+
+        card.style.opacity =
+          "0.70";
+
+      }
+
+
+      const active =
+        !timeInfo.closed;
+
+
+      /*
+        आज = Supabase number
+        कल = localStorage
+      */
+
+      const todayResult =
+        item.number ||
+        "**";
+
+
+      const kalResult =
+        getKalResult(
+          item.name
+        );
+
+
+      card.innerHTML = `
+
+        <div class="game-top">
+
+          <div class="game-name">
+
+            ${active ? "🔥 " : ""}
+
+            ${item.name || "--"}
+
+          </div>
+
+
+          <div class="game-time">
+
+            OPEN:
+            ${formatTimeAMPM(item.open)}
+
+            &nbsp; | &nbsp;
+
+            CLOSE:
+            ${formatTimeAMPM(item.close)}
+
+          </div>
+
+        </div>
+
+
+        <div class="game-middle">
+
+          <div class="result-box">
+
+            <div class="result-number">
+
+              ${kalResult}
+
+            </div>
+
+            <div class="result-label">
+
+              कल
+
+            </div>
+
+          </div>
+
+
+          <div
+            class="countdown ${
+              timeInfo.closed
+                ? "closed"
+                : ""
+            }">
+
+            ${timeInfo.text}
+
+          </div>
+
+
+          <div class="result-box">
+
+            <div class="result-number">
+
+              ${todayResult}
+
+            </div>
+
+            <div class="result-label">
+
+              आज
+
+            </div>
+
+          </div>
+
+        </div>
+
+      `;
+
+
+
+      /*
+        Closed game click नहीं होगी।
+      */
+
+      if(active){
+
+        card.onclick = () => {
+
+          localStorage.setItem(
+
+            "market",
+
+            item.name
+
+          );
+
+
+          window.location.href =
+            "game.html";
+
+        };
+
+      }
+
+
+      gamesBox.appendChild(
+        card
+      );
+
+    }
+
+  );
+
+}
+
+
+
+/* =====================================================
+   COUNTDOWN UPDATE
+===================================================== */
+
+function updateCountdowns(){
+
+  const cards =
+    document.querySelectorAll(
+      ".game-card"
+    );
+
+
+  let becameClosed =
+    false;
+
+
+  cards.forEach(
+
+    card => {
+
+      const closeTime =
+        card.getAttribute(
+          "data-close"
+        );
+
+
+      if(!closeTime){
+
+        return;
+
+      }
+
+
+      const timeInfo =
+        getRemainingTime(
+          closeTime
+        );
+
+
+      const countdown =
+        card.querySelector(
+          ".countdown"
+        );
+
+
+      if(!countdown){
+
+        return;
+
+      }
+
+
+
+      /*
+        ACTIVE
+      */
+
+      if(
+        !timeInfo.closed
+      ){
+
+        countdown.innerText =
+          timeInfo.text;
+
+
+        countdown.classList.remove(
+          "closed"
+        );
+
+
+        card.style.opacity =
+          "1";
+
+      }
+
+
+
+      /*
+        CLOSED
+      */
+
+      else{
+
+        if(
+          !countdown.classList.contains(
+            "closed"
+          )
+        ){
+
+          becameClosed =
+            true;
+
+        }
+
+
+        countdown.innerText =
+          "बंद";
+
+
+        countdown.classList.add(
+          "closed"
+        );
+
+
+        card.style.opacity =
+          "0.70";
+
+
+        card.onclick =
+          null;
+
+      }
+
+    }
+
+  );
+
+
+
+  /*
+    7 AM आने पर पूरा page reload
+    ताकि नया game-day और नया
+    local result system लागू हो।
+  */
+
+  const now =
+    new Date();
+
+
+  if(
+    now.getHours() === 7 &&
+    now.getMinutes() === 0 &&
+    now.getSeconds() < 2
+  ){
+
+    loadButtons();
+
+  }
+
+
+  if(becameClosed){
+
+    loadButtons();
+
+  }
+
+}
+
+
+
+/* =====================================================
+   CHECK 7 AM GAME DAY
+===================================================== */
+
+let lastGameDay =
+  getGameDay();
+
+
+function checkGameDay(){
+
+  const currentGameDay =
+    getGameDay();
+
+
+  /*
+    जैसे ही game-day बदलता है,
+    games फिर से load होंगे।
+  */
+
+  if(
+    currentGameDay !==
+    lastGameDay
+  ){
+
+    lastGameDay =
+      currentGameDay;
+
+
+    loadButtons();
+
+    loadWallet();
+
+  }
+
+}
+
+
+
+/* =====================================================
+   NAVIGATION
+===================================================== */
+
+function goHome(){
+
+  window.location.href =
+    "home.html";
+
+}
+
+
+function goDeposit(){
+
+  window.location.href =
+    "deposit.html";
+
+}
+
+
+function goWithdraw(){
+
+  window.location.href =
+    "withdraw.html";
+
+}
+
+
+function goHistory(){
+
+  window.location.href =
+    "history.html";
+
+}
+
+
+function goProfile(){
+
+  window.location.href =
+    "profile.html";
+
+}
+
+
+
+/* =====================================================
+   START
+===================================================== */
+
+loadWallet();
+
+loadButtons();
+
+
+/*
+  हर second countdown
+*/
+
+setInterval(
+
+  updateCountdowns,
+
+  1000
+
+);
+
+
+/*
+  हर second check:
+  क्या नया game-day शुरू हुआ?
+*/
+
+setInterval(
+
+  checkGameDay,
+
+  1000
+
+);
+
+
+/*
+  हर 60 second Supabase refresh
+*/
+
+setInterval(
+
+  () => {
+
+    loadButtons();
+
+    loadWallet();
+
+  },
+
+  60000
+
+);
+
+</script>
+
+
+<script src="menu.js"></script>
+
+</body>
+
+</html>

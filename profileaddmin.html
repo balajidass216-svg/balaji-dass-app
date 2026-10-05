@@ -1,0 +1,749 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Admin Users</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f2f2f2;
+}
+
+.header{
+  background:red;
+  color:white;
+  padding:18px;
+  text-align:center;
+  font-size:22px;
+  font-weight:bold;
+}
+
+.container{
+  padding:15px;
+  max-width:900px;
+  margin:auto;
+}
+
+/* USER ID DROPDOWN */
+
+.user-filter{
+  width:100%;
+  padding:14px;
+  border:1px solid #ddd;
+  border-radius:12px;
+  background:white;
+  font-size:16px;
+  font-weight:bold;
+  margin-bottom:12px;
+  outline:none;
+}
+
+.refresh-btn{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  background:#222;
+  color:white;
+  font-size:16px;
+  font-weight:bold;
+  margin-bottom:18px;
+  cursor:pointer;
+}
+
+.refresh-btn:active{
+  transform:scale(.98);
+}
+
+.user-card{
+  background:white;
+  border-radius:18px;
+  padding:20px;
+  margin-bottom:18px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.10);
+}
+
+.user-title{
+  font-size:20px;
+  font-weight:bold;
+  margin-bottom:15px;
+  color:#222;
+}
+
+.detail{
+  padding:10px 0;
+  border-bottom:1px solid #eee;
+}
+
+.detail:last-child{
+  border-bottom:none;
+}
+
+.label{
+  font-size:13px;
+  color:#777;
+  margin-bottom:4px;
+}
+
+.value{
+  font-size:16px;
+  font-weight:bold;
+  color:#222;
+  word-break:break-word;
+}
+
+.qr{
+  width:180px;
+  height:180px;
+  object-fit:contain;
+  border:1px solid #ddd;
+  border-radius:12px;
+  margin-top:8px;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.qr:active{
+  transform:scale(.97);
+}
+
+.qr-hint{
+  font-size:12px;
+  color:#777;
+  margin-top:5px;
+}
+
+.loading{
+  text-align:center;
+  padding:30px;
+  color:#777;
+}
+
+.error{
+  text-align:center;
+  padding:20px;
+  color:red;
+  font-weight:bold;
+}
+
+.no-users{
+  text-align:center;
+  background:white;
+  padding:30px;
+  border-radius:15px;
+  color:#777;
+}
+
+
+/* =====================================
+   QR FULL SCREEN
+===================================== */
+
+.qr-modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.88);
+  z-index:9999;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+.qr-modal.show{
+  display:flex;
+}
+
+.qr-modal img{
+  max-width:95vw;
+  max-height:90vh;
+  width:auto;
+  height:auto;
+  object-fit:contain;
+  background:white;
+  padding:10px;
+  border-radius:15px;
+}
+
+.qr-close{
+  position:absolute;
+  top:15px;
+  right:18px;
+  width:42px;
+  height:42px;
+  border:none;
+  border-radius:50%;
+  background:white;
+  color:#222;
+  font-size:28px;
+  line-height:42px;
+  cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+  Admin - User Details
+</div>
+
+
+<div class="container">
+
+
+<!-- USER ID DROPDOWN -->
+
+<select
+  id="userFilter"
+  class="user-filter"
+  onchange="filterUsers()">
+
+  <option value="all">
+    All Users
+  </option>
+
+</select>
+
+
+<button
+  class="refresh-btn"
+  onclick="loadUsers()">
+
+  Refresh Users
+
+</button>
+
+
+<div id="users">
+
+  <div class="loading">
+    Loading users...
+  </div>
+
+</div>
+
+</div>
+
+
+<!-- QR FULL SCREEN MODAL -->
+
+<div
+  id="qrModal"
+  class="qr-modal"
+  onclick="closeQR(event)">
+
+  <button
+    class="qr-close"
+    onclick="closeQR()">
+    ×
+  </button>
+
+  <img
+    id="fullQR"
+    src=""
+    alt="Full QR Code">
+
+</div>
+
+
+<script>
+
+// =====================================
+// SUPABASE
+// =====================================
+
+const SUPABASE_URL =
+"https://glhomrlwnwhevunfubog.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB";
+
+const client =
+supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+
+// =====================================
+// STORE USERS
+// =====================================
+
+let allUsers = [];
+
+
+// =====================================
+// LOAD USERS
+// =====================================
+
+async function loadUsers(){
+
+  const usersBox =
+    document.getElementById("users");
+
+  const filter =
+    document.getElementById("userFilter");
+
+  usersBox.innerHTML = `
+    <div class="loading">
+      Loading users...
+    </div>
+  `;
+
+
+  const {
+    data,
+    error
+  } = await client
+
+    .from("login")
+
+    .select(`
+      id,
+      name,
+      mobile,
+      refer_code,
+      qr_code,
+      upi_id,
+      bank_name,
+      account_holder,
+      account_number,
+      ifsc_code
+    `)
+
+    .order(
+      "id",
+      {
+        ascending:false
+      }
+    );
+
+
+  // ===================================
+  // ERROR
+  // ===================================
+
+  if(error){
+
+    console.log(
+      "Users loading error:",
+      error
+    );
+
+    usersBox.innerHTML = `
+      <div class="error">
+        Users load nahi hue.<br><br>
+        ${error.message}
+      </div>
+    `;
+
+    return;
+  }
+
+
+  // SAVE USERS
+
+  allUsers = data || [];
+
+
+  // ===================================
+  // UPDATE DROPDOWN
+  // ===================================
+
+  filter.innerHTML = `
+    <option value="all">
+      All Users
+    </option>
+  `;
+
+
+  allUsers.forEach(user => {
+
+    const option =
+      document.createElement("option");
+
+    option.value = user.id;
+
+    option.textContent =
+      `User ID: ${user.id}`;
+
+    filter.appendChild(option);
+
+  });
+
+
+  // ===================================
+  // SHOW USERS
+  // ===================================
+
+  filterUsers();
+
+}
+
+
+// =====================================
+// FILTER USERS
+// =====================================
+
+function filterUsers(){
+
+  const selectedID =
+    document.getElementById("userFilter").value;
+
+  let usersToShow;
+
+
+  if(selectedID === "all"){
+
+    usersToShow = allUsers;
+
+  }else{
+
+    usersToShow =
+      allUsers.filter(
+        user =>
+          String(user.id) === String(selectedID)
+      );
+
+  }
+
+
+  showUsers(usersToShow);
+
+}
+
+
+// =====================================
+// SHOW USERS
+// =====================================
+
+function showUsers(data){
+
+  const usersBox =
+    document.getElementById("users");
+
+
+  // ===================================
+  // NO USERS
+  // ===================================
+
+  if(!data || data.length === 0){
+
+    usersBox.innerHTML = `
+      <div class="no-users">
+        Koi user nahi mila.
+      </div>
+    `;
+
+    return;
+  }
+
+
+  // ===================================
+  // SHOW USERS
+  // ===================================
+
+  usersBox.innerHTML = "";
+
+
+  data.forEach((user,index) => {
+
+
+    // =================================
+    // QR HTML
+    // =================================
+
+    const qrHTML =
+      user.qr_code
+      ?
+      `
+      <div class="detail">
+
+        <div class="label">
+          QR Code
+        </div>
+
+        <img
+          class="qr"
+          src="${user.qr_code}"
+          alt="User QR Code"
+          onclick="openQR('${escapeQR(user.qr_code)}')">
+
+        <div class="qr-hint">
+          QR par click karke full open karein
+        </div>
+
+      </div>
+      `
+      :
+      `
+      <div class="detail">
+
+        <div class="label">
+          QR Code
+        </div>
+
+        <div class="value">
+          QR Code saved nahi hai
+        </div>
+
+      </div>
+      `;
+
+
+    // =================================
+    // CARD
+    // =================================
+
+    const card =
+      document.createElement("div");
+
+    card.className =
+      "user-card";
+
+
+    card.innerHTML = `
+
+      <div class="user-title">
+        User #${index + 1}
+      </div>
+
+
+      <div class="detail">
+
+        <div class="label">
+          User ID
+        </div>
+
+        <div class="value">
+          ${user.id ?? "-"}
+        </div>
+
+      </div>
+
+
+      <div class="detail">
+
+        <div class="label">
+          User Name
+        </div>
+
+        <div class="value">
+          ${user.name ?? "-"}
+        </div>
+
+      </div>
+
+
+      <div class="detail">
+
+        <div class="label">
+          Mobile Number
+        </div>
+
+        <div class="value">
+          ${user.mobile ?? "-"}
+        </div>
+
+      </div>
+
+
+      <div class="detail">
+
+        <div class="label">
+          Refer Code
+        </div>
+
+        <div class="value">
+          ${user.refer_code ?? "-"}
+        </div>
+
+      </div>
+
+
+      <div class="detail">
+
+        <div class="label">
+          UPI ID
+        </div>
+
+        <div class="value">
+          ${user.upi_id ?? "-"}
+        </div>
+
+      </div>
+
+
+      <div class="detail">
+
+        <div class="label">
+          Bank Name
+        </div>
+
+        <div class="value">
+          ${user.bank_name ?? "-"}
+        </div>
+
+      </div>
+
+
+      <div class="detail">
+
+        <div class="label">
+          Account Holder
+        </div>
+
+        <div class="value">
+          ${user.account_holder ?? "-"}
+        </div>
+
+      </div>
+
+
+      <div class="detail">
+
+        <div class="label">
+          Account Number
+        </div>
+
+        <div class="value">
+          ${user.account_number ?? "-"}
+        </div>
+
+      </div>
+
+
+      <div class="detail">
+
+        <div class="label">
+          IFSC Code
+        </div>
+
+        <div class="value">
+          ${user.ifsc_code ?? "-"}
+        </div>
+
+      </div>
+
+
+      ${qrHTML}
+
+    `;
+
+
+    usersBox.appendChild(card);
+
+  });
+
+}
+
+
+// =====================================
+// QR ESCAPE
+// =====================================
+
+function escapeQR(value){
+
+  return value
+    .replace(/\\/g,"\\\\")
+    .replace(/'/g,"\\'")
+    .replace(/\r/g,"")
+    .replace(/\n/g,"\\n");
+
+}
+
+
+// =====================================
+// OPEN QR
+// =====================================
+
+function openQR(src){
+
+  const modal =
+    document.getElementById("qrModal");
+
+  const fullQR =
+    document.getElementById("fullQR");
+
+  fullQR.src = src;
+
+  modal.classList.add("show");
+
+}
+
+
+// =====================================
+// CLOSE QR
+// =====================================
+
+function closeQR(event){
+
+  if(
+    event &&
+    event.target.id !== "qrModal"
+  ){
+    return;
+  }
+
+  const modal =
+    document.getElementById("qrModal");
+
+  const fullQR =
+    document.getElementById("fullQR");
+
+  fullQR.src = "";
+
+  modal.classList.remove("show");
+
+}
+
+
+// =====================================
+// ESC KEY
+// =====================================
+
+document.addEventListener(
+  "keydown",
+  function(event){
+
+    if(event.key === "Escape"){
+
+      closeQR();
+
+    }
+
+  }
+);
+
+
+// =====================================
+// START
+// =====================================
+
+loadUsers();
+
+</script>
+
+</body>
+
+</html>
+```

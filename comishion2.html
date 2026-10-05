@@ -1,0 +1,847 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>My Commission</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f4f6f9;
+  color:#222;
+}
+
+.header{
+  background:linear-gradient(135deg,#ff9800,#ff5722);
+  color:white;
+  padding:18px;
+  text-align:center;
+  font-size:22px;
+  font-weight:bold;
+}
+
+.container{
+  padding:15px;
+}
+
+.total-box{
+  background:white;
+  border-radius:15px;
+  padding:20px;
+  text-align:center;
+  box-shadow:0 3px 10px rgba(0,0,0,.08);
+  margin-bottom:15px;
+}
+
+.total-title{
+  font-size:15px;
+  color:#777;
+}
+
+.total-amount{
+  font-size:30px;
+  font-weight:bold;
+  color:#ff5722;
+  margin-top:8px;
+}
+
+.ref-box{
+  background:white;
+  border-radius:15px;
+  padding:15px;
+  margin-bottom:15px;
+  box-shadow:0 3px 10px rgba(0,0,0,.08);
+}
+
+.ref-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:8px;
+}
+
+.ref-row:last-child{
+  margin-bottom:0;
+}
+
+.ref-code{
+  font-size:20px;
+  font-weight:bold;
+  color:#ff5722;
+}
+
+.count{
+  font-weight:bold;
+}
+
+
+/* ================= PLAY ROW ================= */
+
+.play-row{
+  background:white;
+  border-radius:12px;
+  padding:14px;
+  margin-bottom:10px;
+  box-shadow:0 3px 10px rgba(0,0,0,.07);
+}
+
+.play-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.user-info{
+  min-width:0;
+}
+
+.user-name{
+  font-size:16px;
+  font-weight:bold;
+  color:#222;
+}
+
+.user-mobile{
+  margin-top:4px;
+  font-size:13px;
+  color:#777;
+}
+
+.market{
+  flex:1;
+  text-align:center;
+  font-size:14px;
+  font-weight:bold;
+  color:#444;
+}
+
+.commission{
+  min-width:70px;
+  text-align:right;
+  font-size:16px;
+  font-weight:bold;
+  color:#16a34a;
+}
+
+
+/* ================= LOADING ================= */
+
+.loading{
+  text-align:center;
+  padding:30px;
+  color:#777;
+}
+
+
+/* ================= EMPTY ================= */
+
+.empty{
+  text-align:center;
+  padding:30px;
+  color:#777;
+  background:white;
+  border-radius:15px;
+}
+
+
+/* ================= ERROR ================= */
+
+.error{
+  text-align:center;
+  padding:20px;
+  color:#d32f2f;
+  background:white;
+  border-radius:15px;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="header">
+  My Commission
+</div>
+
+
+<div class="container">
+
+
+  <div class="total-box">
+
+    <div class="total-title">
+      Total Commission
+    </div>
+
+    <div
+      class="total-amount"
+      id="totalCommission"
+    >
+      ₹0
+    </div>
+
+  </div>
+
+
+  <div class="ref-box">
+
+    <div class="ref-row">
+
+      <span>
+        My Referral Code
+      </span>
+
+      <span
+        class="ref-code"
+        id="myReferCode"
+      >
+        -
+      </span>
+
+    </div>
+
+
+    <div class="ref-row">
+
+      <span>
+        Referred Users
+      </span>
+
+      <span
+        class="count"
+        id="userCount"
+      >
+        0
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <div id="userList">
+
+    <div class="loading">
+      Loading...
+    </div>
+
+  </div>
+
+
+</div>
+
+
+
+<script>
+
+
+/* ================= SUPABASE ================= */
+
+const SUPABASE_URL =
+    "https://glhomrlwnwhevunfubog.supabase.co";
+
+
+const SUPABASE_KEY =
+    "sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB";
+
+
+const client =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+
+/* ================= CURRENT USER ================= */
+
+function getCurrentUser(){
+
+  const keys = [
+    "user",
+    "currentUser",
+    "loginUser",
+    "loggedUser"
+  ];
+
+
+  for(
+    const key of keys
+  ){
+
+    const data =
+      localStorage.getItem(key);
+
+
+    if(!data){
+      continue;
+    }
+
+
+    try{
+
+      const user =
+        JSON.parse(data);
+
+
+      if(user){
+        return user;
+      }
+
+    }
+    catch(e){
+
+      console.log(
+        "LocalStorage parse error:",
+        e
+      );
+
+    }
+
+  }
+
+
+  return null;
+
+}
+
+
+
+/* ================= LAST 4 MOBILE ================= */
+
+function lastFourMobile(mobile){
+
+  if(!mobile){
+    return "****";
+  }
+
+
+  const value =
+    String(mobile);
+
+
+  if(value.length <= 4){
+    return value;
+  }
+
+
+  return "****" +
+         value.slice(-4);
+
+}
+
+
+
+/* ================= LOAD COMMISSION ================= */
+
+async function loadCommission(){
+
+  const userList =
+    document.getElementById(
+      "userList"
+    );
+
+
+  userList.innerHTML = `
+
+    <div class="loading">
+      Loading...
+    </div>
+
+  `;
+
+
+  try{
+
+
+    /* ================= CURRENT USER ================= */
+
+    const myUser =
+      getCurrentUser();
+
+
+    if(!myUser){
+
+      userList.innerHTML = `
+
+        <div class="error">
+          User login information not found.
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    const currentId =
+      myUser.id ||
+      myUser.user_id ||
+      myUser.userId;
+
+
+    if(!currentId){
+
+      userList.innerHTML = `
+
+        <div class="error">
+          User ID not found.
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+
+    /* ================= CURRENT USER ================= */
+
+    const {
+      data: currentUser,
+      error: userError
+    } = await client
+
+      .from("login")
+
+      .select(
+        "id,name,mobile,refer_code"
+      )
+
+      .eq(
+        "id",
+        currentId
+      )
+
+      .maybeSingle();
+
+
+    if(userError){
+      throw userError;
+    }
+
+
+    if(!currentUser){
+
+      userList.innerHTML = `
+
+        <div class="error">
+          Current user record not found.
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+
+    /* ================= MY REFER CODE ================= */
+
+    const myReferCode =
+      currentUser.refer_code;
+
+
+    document.getElementById(
+      "myReferCode"
+    ).textContent =
+      myReferCode || "-";
+
+
+    if(!myReferCode){
+
+      userList.innerHTML = `
+
+        <div class="empty">
+          Your referral code is not available.
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+
+    /* ================= COMMISSION RECORDS ================= */
+
+    const {
+      data: records,
+      error: recordError
+    } = await client
+
+      .from("commission_records")
+
+      .select(
+        "id,referral_id,commission_amount,commission_percent,status,user_id,history_id,created_at"
+      )
+
+      .eq(
+        "referral_id",
+        myReferCode
+      )
+
+      .order(
+        "created_at",
+        {
+          ascending:false
+        }
+      );
+
+
+    if(recordError){
+      throw recordError;
+    }
+
+
+
+    if(
+      !records ||
+      records.length === 0
+    ){
+
+      document.getElementById(
+        "userCount"
+      ).textContent = "0";
+
+
+      document.getElementById(
+        "totalCommission"
+      ).textContent = "₹0";
+
+
+      userList.innerHTML = `
+
+        <div class="empty">
+          Abhi koi commission record nahi hai.
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+
+    /* ================= USER IDs ================= */
+
+    const userIds = [
+      ...new Set(
+        records
+          .map(row => row.user_id)
+          .filter(Boolean)
+          .map(id => String(id))
+      )
+    ];
+
+
+
+    /* ================= USERS ================= */
+
+    let users = [];
+
+
+    if(userIds.length > 0){
+
+      const {
+        data,
+        error
+      } = await client
+
+        .from("login")
+
+        .select(
+          "id,name,mobile"
+        )
+
+        .in(
+          "id",
+          userIds
+        );
+
+
+      if(error){
+        throw error;
+      }
+
+
+      users = data || [];
+
+    }
+
+
+
+    const userMap =
+      new Map();
+
+
+    users.forEach(user => {
+
+      userMap.set(
+        String(user.id),
+        user
+      );
+
+    });
+
+
+
+    /* ================= COUNT ================= */
+
+    const uniqueUsers =
+      new Set(
+        records.map(
+          row =>
+            String(row.user_id)
+        )
+      );
+
+
+    document.getElementById(
+      "userCount"
+    ).textContent =
+      uniqueUsers.size;
+
+
+
+    /* ================= TOTAL ================= */
+
+    let totalCommission = 0;
+
+
+    records.forEach(row => {
+
+      /*
+        Total commission mein
+        sirf accepted commission count hogi.
+      */
+
+      if(
+        row.status === "accepted"
+      ){
+
+        totalCommission +=
+          Number(
+            row.commission_amount
+          ) || 0;
+
+      }
+
+    });
+
+
+    document.getElementById(
+      "totalCommission"
+    ).textContent =
+      "₹" + totalCommission;
+
+
+
+    /* ================= ROWS ================= */
+
+    let html = "";
+
+
+    records.forEach(row => {
+
+
+      const user =
+        userMap.get(
+          String(row.user_id)
+        );
+
+
+      if(!user){
+        return;
+      }
+
+
+      const commission =
+        Number(
+          row.commission_amount
+        ) || 0;
+
+
+      /*
+        Status display completely removed.
+      */
+
+      html += `
+
+        <div
+          class="play-row"
+          data-history-id="${row.history_id}"
+        >
+
+          <div class="play-top">
+
+
+            <div class="user-info">
+
+              <div class="user-name">
+                ${user.name || "Customer"}
+              </div>
+
+              <div class="user-mobile">
+                ${lastFourMobile(user.mobile)}
+              </div>
+
+            </div>
+
+
+            <div
+              class="market"
+              id="market-${row.id}"
+            >
+              Loading...
+            </div>
+
+
+            <div class="commission">
+              ₹${commission}
+            </div>
+
+
+          </div>
+
+
+        </div>
+
+      `;
+
+    });
+
+
+    userList.innerHTML =
+      html;
+
+
+
+    /* ================= MARKET NAMES ================= */
+
+    const historyIds =
+      records
+        .map(
+          row => row.history_id
+        )
+        .filter(Boolean)
+        .map(
+          id => String(id)
+        );
+
+
+    if(historyIds.length > 0){
+
+      const {
+        data: histories
+      } = await client
+
+        .from("history")
+
+        .select(
+          "id,market"
+        )
+
+        .in(
+          "id",
+          historyIds
+        );
+
+
+      (histories || [])
+        .forEach(history => {
+
+          const record =
+            records.find(
+              row =>
+                String(row.history_id)
+                === String(history.id)
+            );
+
+
+          if(record){
+
+            const market =
+              document.getElementById(
+                "market-" + record.id
+              );
+
+
+            if(market){
+
+              market.textContent =
+                history.market || "-";
+
+            }
+
+          }
+
+        });
+
+    }
+
+
+  }
+  catch(error){
+
+    console.log(
+      "COMMISSION ERROR:",
+      error
+    );
+
+
+    userList.innerHTML = `
+
+      <div class="error">
+
+        Commission data load nahi ho raha.
+
+        <br><br>
+
+        ${error.message || error}
+
+      </div>
+
+    `;
+
+  }
+
+}
+
+
+/* ================= START ================= */
+
+loadCommission();
+
+
+</script>
+
+
+</body>
+
+</html>
+```

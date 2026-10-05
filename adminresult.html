@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Admin Result</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial;
+  background:#f2f2f2;
+}
+
+.header{
+  background:#0057d8;
+  color:white;
+  padding:18px;
+  text-align:center;
+  font-size:22px;
+  font-weight:bold;
+}
+
+.container{
+  padding:15px;
+}
+
+.market{
+  background:white;
+  padding:15px;
+  margin-bottom:12px;
+  border-radius:15px;
+  box-shadow:0 2px 8px rgba(0,0,0,.10);
+}
+
+.market-name{
+  font-size:19px;
+  font-weight:bold;
+  margin-bottom:10px;
+}
+
+.row{
+  display:flex;
+  gap:8px;
+}
+
+.number{
+  flex:1;
+  padding:13px;
+  border:1px solid #ddd;
+  border-radius:10px;
+  font-size:18px;
+  text-align:center;
+}
+
+.save{
+  width:90px;
+  border:0;
+  border-radius:10px;
+  background:#16a34a;
+  color:white;
+  font-size:16px;
+  font-weight:bold;
+}
+
+.loading{
+  text-align:center;
+  padding:30px;
+  color:#777;
+}
+
+.error{
+  background:#ffe5e5;
+  color:red;
+  padding:15px;
+  border-radius:10px;
+  text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  Admin Result
+</div>
+
+<div class="container">
+
+  <div id="markets">
+    <div class="loading">Loading...</div>
+  </div>
+
+</div>
+
+<script>
+
+// ==========================================
+// SUPABASE
+// ==========================================
+
+const SUPABASE_URL =
+"https://glhomrlwnwhevunfubog.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB";
+
+const client = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+
+// ==========================================
+// GET GAME DATE
+// 6:00 AM IST = NEW GAME DAY
+// ==========================================
+
+function getGameDate(){
+
+  const now = new Date();
+
+  // India UTC offset = +5:30
+  const indiaTime = new Date(
+    now.toLocaleString("en-US", {
+      timeZone:"Asia/Kolkata"
+    })
+  );
+
+  // 6 AM se pehle previous game date
+  if(indiaTime.getHours() < 6){
+
+    indiaTime.setDate(
+      indiaTime.getDate() - 1
+    );
+  }
+
+  const year =
+    indiaTime.getFullYear();
+
+  const month =
+    String(indiaTime.getMonth()+1).padStart(2,"0");
+
+  const day =
+    String(indiaTime.getDate()).padStart(2,"0");
+
+  return `${year}-${month}-${day}`;
+}
+
+
+// ==========================================
+// LOAD MARKETS
+// ==========================================
+
+async function loadMarkets(){
+
+  const { data, error } = await client
+    .from("Game result")
+    .select("id,name,number")
+    .order("id", {ascending:true});
+
+
+  if(error){
+
+    console.log(error);
+
+    document.getElementById("markets").innerHTML =
+      `<div class="error">
+        Game Result load nahi ho raha
+      </div>`;
+
+    return;
+  }
+
+
+  if(!data || data.length === 0){
+
+    document.getElementById("markets").innerHTML =
+      `<div class="loading">
+        Koi market nahi mila
+      </div>`;
+
+    return;
+  }
+
+
+  let html = "";
+
+
+  data.forEach(item => {
+
+    html += `
+
+      <div class="market">
+
+        <div class="market-name">
+          ${escapeHtml(item.name || "Market")}
+        </div>
+
+        <div class="row">
+
+          <input
+            class="number"
+            id="number_${item.id}"
+            type="text"
+            maxlength="2"
+            value="${escapeHtml(item.number || "")}"
+            placeholder="Result"
+          >
+
+          <button
+            class="save"
+            onclick="saveResult(${item.id})"
+          >
+            SAVE
+          </button>
+
+        </div>
+
+      </div>
+
+    `;
+
+  });
+
+
+  document.getElementById("markets").innerHTML =
+    html;
+}
+
+
+// ==========================================
+// SAVE RESULT
+// ==========================================
+
+async function saveResult(id){
+
+  const input =
+    document.getElementById("number_"+id);
+
+  const number =
+    input.value.trim();
+
+
+  if(number === ""){
+
+    alert("Result number dalo");
+
+    return;
+  }
+
+
+  if(!/^\d{1,2}$/.test(number)){
+
+    alert("Sirf 0 se 99 tak number dalo");
+
+    return;
+  }
+
+
+  // 00 / 01 / 05 ko preserve karo
+  const finalNumber =
+    number.padStart(2,"0");
+
+
+  const gameDate =
+    getGameDate();
+
+
+  // ========================================
+  // UPDATE GAME RESULT
+  // ========================================
+
+  const { data:market, error:marketError } =
+    await client
+    .from("Game result")
+    .update({
+      number:finalNumber,
+      date:gameDate
+    })
+    .eq("id",id)
+    .select("id,name,number,date")
+    .single();
+
+
+  if(marketError){
+
+    console.log(marketError);
+
+    alert(
+      "Game Result update nahi hua ❌\n" +
+      marketError.message
+    );
+
+    return;
+  }
+
+
+  // ========================================
+  // HISTORY
+  // ========================================
+
+  const marketName =
+    market.name;
+
+
+  /*
+    IMPORTANT:
+    `result` table me market ka column
+    automatically create/update karne ke
+    liye PostgreSQL function/trigger chahiye.
+
+    Isliye abhi sirf Game Result update
+    hua hai.
+  */
+
+
+  alert(
+    marketName +
+    " result save ho gaya ✅\n\n" +
+    "Result: " + finalNumber +
+    "\nDate: " + gameDate
+  );
+
+}
+
+
+// ==========================================
+// HTML SAFETY
+// ==========================================
+
+function escapeHtml(value){
+
+  const div =
+    document.createElement("div");
+
+  div.textContent =
+    value;
+
+  return div.innerHTML;
+}
+
+
+// ==========================================
+// START
+// ==========================================
+
+loadMarkets();
+
+</script>
+
+</body>
+</html>

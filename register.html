@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Register</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #f2f2f2;
+      text-align: center;
+    }
+
+    .top {
+      background: red;
+      height: 50px;
+    }
+
+    .logo {
+      margin-top: 20px;
+    }
+
+    .logo img {
+      width: 100px;
+      border-radius: 50%;
+    }
+
+    h1 {
+      color: red;
+    }
+
+    .box {
+      background: white;
+      margin: 20px;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    input {
+      width: 90%;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 30px;
+      border: none;
+      background: #f2f2f2;
+      font-size: 16px;
+    }
+
+    .btn {
+      width: 90%;
+      padding: 15px;
+      background: #2d8cff;
+      color: white;
+      border: none;
+      border-radius: 30px;
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    .back {
+      margin-top: 15px;
+      color: red;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="top"></div>
+
+<div class="logo">
+  <img src="https://i.ibb.co/6bQGZpG/gold-logo.png">
+</div>
+
+<h1>Register</h1>
+
+<div class="box">
+
+  <input type="text" id="mobile" placeholder="Mobile Number">
+
+  <input type="password" id="password" placeholder="Password">
+
+  <button class="register-btn" onclick="registerUser()">REGISTER NOW</button>
+
+  <p class="back" onclick="goLogin()">Back to Login</p>
+
+</div>
+
+<script>
+function registerUser() {
+
+  var mobile = document.getElementById("mobile").value;
+  var password = document.getElementById("password").value;
+
+  if(mobile == "" || password == ""){
+    alert("Fill all fields");
+    return;
+  }
+
+  fetch("https://script.google.com/macros/s/AKfycbzzCIG2ixt48a5pVgUgCi8tfSBV81lVwTdWnlW8tHjK73YY24A5eL-ThG2T1OxI7JyW9g/exec", {
+    method: "POST",
+    body: JSON.stringify({
+      mobile: mobile,
+      password: password,
+      type: "register"
+    })
+  })
+  .then(res => res.text())
+  .then(data => {
+    if (data.includes("Success")) {
+        alert("Register Success");
+        window.location.href = "index.html";
+    } else {
+        alert(data);
+    }
+});
+
+}
+
+function goLogin(){
+  window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>

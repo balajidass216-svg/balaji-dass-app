@@ -1,0 +1,471 @@
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Wining</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f9;
+  color: #222;
+}
+
+.header {
+  background: #111827;
+  color: white;
+  padding: 18px 15px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.container {
+  width: 100%;
+  max-width: 650px;
+  margin: auto;
+  padding: 15px;
+}
+
+.card {
+  background: white;
+  border-radius: 14px;
+  margin-bottom: 12px;
+  padding: 15px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
+
+.market {
+  text-align: center;
+  font-size: 19px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: #111827;
+}
+
+.info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+
+.info:last-child {
+  border-bottom: none;
+}
+
+.label {
+  color: #777;
+}
+
+.value {
+  font-weight: bold;
+}
+
+.win-amount {
+  font-size: 21px;
+  color: #15803d;
+}
+
+.status {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.accepted {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.cancelled {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.empty {
+  background: white;
+  border-radius: 14px;
+  text-align: center;
+  padding: 35px 15px;
+  color: #777;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+}
+
+.loading {
+  text-align: center;
+  padding: 30px;
+  color: #777;
+}
+
+.refresh {
+  display: block;
+  margin: 0 auto 15px;
+  padding: 9px 18px;
+  border: none;
+  border-radius: 20px;
+  background: #111827;
+  color: white;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  🏆 Wining
+</div>
+
+<div class="container">
+
+  <button class="refresh" onclick="loadWining()">
+    Refresh
+  </button>
+
+  <div id="winingList">
+    <div class="loading">
+      Wining load ho rahi hai...
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+/* ================= SUPABASE ================= */
+
+const supabaseClient = supabase.createClient(
+  "https://glhomrlwnwhevunfubog.supabase.co",
+  "sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB"
+);
+
+
+/* ================= GET USER ID ================= */
+
+function getUserId() {
+
+  let userId = localStorage.getItem("user_id");
+
+  if (userId && userId !== "null" && userId !== "undefined") {
+    return String(userId).trim();
+  }
+
+  let id = localStorage.getItem("id");
+
+  if (id && id !== "null" && id !== "undefined") {
+    return String(id).trim();
+  }
+
+  let userId2 = localStorage.getItem("userId");
+
+  if (userId2 && userId2 !== "null" && userId2 !== "undefined") {
+    return String(userId2).trim();
+  }
+
+  let loginId = localStorage.getItem("login_id");
+
+  if (loginId && loginId !== "null" && loginId !== "undefined") {
+    return String(loginId).trim();
+  }
+
+  return null;
+}
+
+
+/* ================= LOAD WINING ================= */
+
+async function loadWining() {
+
+  const list = document.getElementById("winingList");
+
+  list.innerHTML = `
+    <div class="loading">
+      Wining load ho rahi hai...
+    </div>
+  `;
+
+
+  const userId = getUserId();
+
+
+  if (!userId) {
+
+    list.innerHTML = `
+      <div class="empty">
+        <div style="font-size:40px;">🔒</div>
+        <br>
+        User login nahi hai.
+      </div>
+    `;
+
+    return;
+  }
+
+
+  console.log("WINING USER ID =", userId);
+
+
+  /* ================= WINING DATA ================= */
+
+  const { data, error } = await supabaseClient
+    .from("wining")
+    .select("*")
+    .eq("user_id", userId)
+    .order("id", { ascending: false });
+
+
+  if (error) {
+
+    console.error("WINING ERROR:", error);
+
+    list.innerHTML = `
+      <div class="empty">
+        <div style="font-size:40px;">⚠️</div>
+        <br>
+        Wining load nahi ho saki.
+      </div>
+    `;
+
+    return;
+  }
+
+
+  if (!data || data.length === 0) {
+
+    list.innerHTML = `
+      <div class="empty">
+        <div style="font-size:45px;">🏆</div>
+        <br>
+        Abhi koi winning nahi hai.
+      </div>
+    `;
+
+    return;
+  }
+
+
+  /* ================= HISTORY IDs ================= */
+
+  const historyIds = [
+    ...new Set(
+      data
+        .map(row => row.history_id)
+        .filter(id => id !== null && id !== undefined)
+    )
+  ];
+
+
+  let historyMap = {};
+
+
+  if (historyIds.length > 0) {
+
+    const { data: historyData, error: historyError } =
+      await supabaseClient
+        .from("history")
+        .select("id, created_at")
+        .in("id", historyIds);
+
+
+    if (!historyError && historyData) {
+
+      historyData.forEach(h => {
+        historyMap[String(h.id)] = h.created_at;
+      });
+
+    }
+  }
+
+
+  /* ================= SHOW DATA ================= */
+
+  list.innerHTML = "";
+
+
+  data.forEach(row => {
+
+    let statusText = "Pending";
+    let statusClass = "pending";
+
+
+    if (row.status === "accepted") {
+      statusText = "Accepted";
+      statusClass = "accepted";
+    }
+
+
+    if (row.status === "cancelled") {
+      statusText = "Cancelled";
+      statusClass = "cancelled";
+    }
+
+
+    /*
+      Pehle wining.created_at
+      Agar wo null hai to history.created_at
+    */
+
+    const dateValue =
+      row.created_at ||
+      historyMap[String(row.history_id)] ||
+      null;
+
+
+    let createdDate = "";
+
+
+    if (dateValue) {
+
+      createdDate = new Date(dateValue).toLocaleString(
+        "en-IN",
+        {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true
+        }
+      );
+
+    }
+
+
+    const card = document.createElement("div");
+
+    card.className = "card";
+
+
+    card.innerHTML = `
+
+      <div class="market">
+        ${escapeHtml(row.market || "Market")}
+      </div>
+
+
+      <div class="info">
+        <span class="label">
+          Number
+        </span>
+
+        <span class="value">
+          ${escapeHtml(row.number || "-")}
+        </span>
+      </div>
+
+
+      <div class="info">
+        <span class="label">
+          Bet Amount
+        </span>
+
+        <span class="value">
+          ₹${Number(row.bet_amount || 0)}
+        </span>
+      </div>
+
+
+      <div class="info">
+        <span class="label">
+          Winning Amount
+        </span>
+
+        <span class="value win-amount">
+          ₹${Number(row.amount || 0)}
+        </span>
+      </div>
+
+
+      <div class="info">
+        <span class="label">
+          Game
+        </span>
+
+        <span class="value">
+          ${escapeHtml(row.game_type || "-")}
+        </span>
+      </div>
+
+
+      <div class="info">
+        <span class="label">
+          Status
+        </span>
+
+        <span class="status ${statusClass}">
+          ${statusText}
+        </span>
+      </div>
+
+
+      ${
+        createdDate
+        ? `
+        <div class="info">
+          <span class="label">
+            Date
+          </span>
+
+          <span class="value">
+            ${createdDate}
+          </span>
+        </div>
+        `
+        : ""
+      }
+
+    `;
+
+
+    list.appendChild(card);
+
+  });
+
+}
+
+
+/* ================= SECURITY ================= */
+
+function escapeHtml(value) {
+
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+}
+
+
+/* ================= START ================= */
+
+loadWining();
+
+</script>
+
+</body>
+</html>
+```

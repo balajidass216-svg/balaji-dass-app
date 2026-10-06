@@ -593,14 +593,9 @@ async function loadRequest(){
     "&cu=INR";
 
 
-  const qrBox =
-  document.getElementById(
-    "qrcode"
-  );
-
-
-  qrBox.innerHTML =
-  "";
+ console.log("QR STEP REACHED");
+console.log("UPI DATA:", upiData);
+console.log("QRCode:", typeof QRCode);
 
 
   new QRCode(

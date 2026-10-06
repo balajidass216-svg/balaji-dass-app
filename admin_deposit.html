@@ -1,20 +1,13 @@
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
-
-<title>Admin Deposit Requests</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deposit</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-
 *{
     box-sizing:border-box;
 }
@@ -22,641 +15,349 @@
 body{
     margin:0;
     font-family:Arial,sans-serif;
-    background:#f2f2f2;
-}
-
-.header{
-    background:#111827;
-    color:white;
-    padding:18px;
-    text-align:center;
-    font-size:21px;
-    font-weight:bold;
+    background:#f5f6fa;
+    color:#222;
 }
 
 .container{
-    max-width:600px;
-    margin:20px auto;
-    padding:10px;
+    max-width:500px;
+    margin:auto;
+    padding:20px 15px 40px;
 }
 
-.deposit-card{
-    background:white;
-    border-radius:14px;
-    padding:18px;
-    margin-bottom:15px;
-    box-shadow:0 3px 12px rgba(0,0,0,0.10);
+.card{
+    background:#fff;
+    border-radius:16px;
+    padding:20px;
+    box-shadow:0 4px 15px rgba(0,0,0,.08);
+}
+
+h2{
+    text-align:center;
+    margin:0 0 20px;
+}
+
+label{
+    display:block;
+    font-weight:bold;
+    margin-bottom:8px;
+}
+
+input{
+    width:100%;
+    padding:13px;
+    border:1px solid #ddd;
+    border-radius:10px;
+    font-size:16px;
+    outline:none;
+}
+
+input:focus{
+    border-color:#555;
+}
+
+button{
+    width:100%;
+    margin-top:15px;
+    padding:14px;
+    border:0;
+    border-radius:10px;
+    background:#222;
+    color:#fff;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:disabled{
+    opacity:.6;
+    cursor:not-allowed;
+}
+
+.error{
+    display:none;
+    margin-top:12px;
+    padding:10px;
+    background:#ffe5e5;
+    color:#c00;
+    border-radius:8px;
+    font-size:14px;
+}
+
+.history-title{
+    margin-top:25px;
+    font-size:18px;
+    font-weight:bold;
+}
+
+.history{
+    margin-top:10px;
+}
+
+.item{
+    background:#fff;
+    padding:14px;
+    margin-bottom:10px;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.06);
 }
 
 .row{
     display:flex;
     justify-content:space-between;
     gap:10px;
-    padding:7px 0;
-    border-bottom:1px solid #eee;
-}
-
-.row:last-child{
-    border-bottom:0;
-}
-
-.label{
-    font-weight:bold;
-    color:#555;
+    margin-bottom:6px;
 }
 
 .amount{
-    font-size:22px;
     font-weight:bold;
 }
 
 .status{
-    display:inline-block;
-    margin-top:10px;
-    padding:7px 12px;
-    border-radius:20px;
-    background:#fff3cd;
-    color:#856404;
     font-weight:bold;
 }
 
-.actions{
-    display:flex;
-    gap:10px;
-    margin-top:15px;
+.pending{
+    color:#d88a00;
 }
 
-.actions button{
-    flex:1;
-    padding:12px;
-    border:0;
-    border-radius:9px;
-    color:white;
-    font-size:15px;
-    font-weight:bold;
-    cursor:pointer;
+.accepted{
+    color:green;
 }
 
-.accept{
-    background:#16a34a;
+.rejected,
+.cancelled{
+    color:red;
 }
 
-.cancel{
-    background:#dc2626;
-}
-
-#message{
+.empty{
+    background:#fff;
+    padding:15px;
     text-align:center;
-    padding:20px;
-    color:#666;
-}
-
-.refresh{
-    width:100%;
-    padding:13px;
-    margin-bottom:15px;
-    border:0;
     border-radius:10px;
-    background:#2563eb;
-    color:white;
-    font-size:16px;
-    font-weight:bold;
-    cursor:pointer;
+    color:#777;
 }
-
 </style>
-
 </head>
 
 <body>
 
-<div class="header">
-    ADMIN DEPOSIT REQUESTS
-</div>
-
 <div class="container">
 
-    <button class="refresh" onclick="loadDeposits()">
-        🔄 Refresh Requests
-    </button>
+    <div class="card">
+        <h2>Deposit</h2>
 
-    <div id="message">
-        Loading...
+        <label for="amount">Enter Amount</label>
+
+        <input
+            type="number"
+            id="amount"
+            placeholder="Minimum ₹100"
+            min="100"
+            step="1"
+        >
+
+        <button id="submitBtn" onclick="openPaymentPage()">
+            Continue to Payment
+        </button>
+
+        <div id="error" class="error"></div>
     </div>
 
-    <div id="depositList"></div>
+    <div class="history-title">
+        Deposit History
+    </div>
+
+    <div id="history" class="history">
+        <div class="empty">Loading...</div>
+    </div>
 
 </div>
 
-
 <script>
-
-
-// ===============================
-// SUPABASE
-// ===============================
-
-const SUPABASE_URL =
-"https://glhomrlwnwhevunfubog.supabase.co";
+const SUPABASE_URL = "https://glhomrlwnwhevunfubog.supabase.co";
 
 const SUPABASE_KEY =
-"sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB";
+    "sb_publishable_VihOz3hSXZzUiI9eANDL0A_EtaD-KIB";
 
 const supabaseClient =
-supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
-
-
-
-// ===============================
-// LOAD DEPOSIT REQUESTS
-// ===============================
-
-async function loadDeposits(){
-
-    const list =
-        document.getElementById("depositList");
-
-    const message =
-        document.getElementById("message");
-
-
-    list.innerHTML = "";
-
-    message.innerText =
-        "Loading...";
-
-
-    const { data, error } =
-        await supabaseClient
-
-        .from("deposit_requests")
-
-        .select("*")
-
-        .eq("status", "pending")
-
-        .order("created_at", {
-            ascending:false
-        });
-
-
-    if(error){
-
-        console.error(error);
-
-        message.innerText =
-            "Error: " + error.message;
-
-        return;
-    }
-
-
-    if(!data || data.length === 0){
-
-        message.innerText =
-            "Koi pending deposit request nahi hai.";
-
-        return;
-    }
-
-
-    message.innerText =
-        data.length + " Pending Request";
-
-
-    data.forEach(item => {
-
-
-        const card =
-            document.createElement("div");
-
-
-        card.className =
-            "deposit-card";
-
-
-        const date =
-            item.created_at
-            ? new Date(item.created_at)
-                .toLocaleString("en-IN")
-            : "-";
-
-
-        card.innerHTML = `
-
-            <div class="row">
-
-                <span class="label">
-                    Deposit ID
-                </span>
-
-                <span>
-                    ${item.id}
-                </span>
-
-            </div>
-
-
-            <div class="row">
-
-                <span class="label">
-                    User ID
-                </span>
-
-                <span>
-                    ${item.user_id}
-                </span>
-
-            </div>
-
-
-            <div class="row">
-
-                <span class="label">
-                    Amount
-                </span>
-
-                <span class="amount">
-                    ₹${Number(item.amount).toFixed(2)}
-                </span>
-
-            </div>
-
-
-            <div class="row">
-
-                <span class="label">
-                    Time
-                </span>
-
-                <span>
-                    ${date}
-                </span>
-
-            </div>
-
-
-            <span class="status">
-                PENDING
-            </span>
-
-
-            <div class="actions">
-
-                <button
-                    class="accept"
-                    onclick='acceptDeposit(
-                        ${item.id},
-                        "${item.user_id}",
-                        ${Number(item.amount)}
-                    )'>
-
-                    ✅ ACCEPT
-
-                </button>
-
-
-                <button
-                    class="cancel"
-                    onclick="cancelDeposit(${item.id})">
-
-                    ❌ CANCEL
-
-                </button>
-
-            </div>
-
-        `;
-
-
-        list.appendChild(card);
-
-    });
-
-}
-
-
-
-// ===============================
-// ACCEPT DEPOSIT
-// ===============================
-
-async function acceptDeposit(
-    depositId,
-    userId,
-    amount
-){
-
-    const confirmAccept =
-        confirm(
-            "₹" +
-            Number(amount).toFixed(2) +
-            " wallet me add karna hai?"
-        );
-
-
-    if(!confirmAccept){
-
-        return;
-
-    }
-
-
-    // Pehle request ka current status check
-
-    const { data: request, error: requestError } =
-
-        await supabaseClient
-
-        .from("deposit_requests")
-
-        .select("status")
-
-        .eq("id", depositId)
-
-        .single();
-
-
-    if(requestError){
-
-        alert(
-            "Request check nahi ho payi."
-        );
-
-        console.error(requestError);
-
-        return;
-    }
-
-
-    // Agar already approved hai
-
-    if(request.status === "approved"){
-
-        alert(
-            "Ye deposit already approved hai."
-        );
-
-        loadDeposits();
-
-        return;
-    }
-
-
-    // Agar already cancelled hai
-
-    if(request.status === "cancelled"){
-
-        alert(
-            "Ye deposit already cancelled hai."
-        );
-
-        loadDeposits();
-
-        return;
-    }
-
-
-
-    // ===============================
-    // USER CURRENT BALANCE
-    // ===============================
-
-    const { data: user, error: userError } =
-
-        await supabaseClient
-
-        .from("login")
-
-        .select("balance")
-
-        .eq("id", userId)
-
-        .single();
-
-
-    if(userError){
-
-        alert(
-            "User ka wallet nahi mila."
-        );
-
-        console.error(userError);
-
-        return;
-    }
-
-
-    const currentBalance =
-        Number(user.balance) || 0;
-
-
-    const depositAmount =
-        Number(amount) || 0;
-
-
-    const newBalance =
-        currentBalance + depositAmount;
-
-
-
-    // ===============================
-    // ADD BALANCE
-    // ===============================
-
-    const { error: balanceError } =
-
-        await supabaseClient
-
-        .from("login")
-
-        .update({
-            balance: newBalance
-        })
-
-        .eq("id", userId);
-
-
-    if(balanceError){
-
-        alert(
-            "Wallet balance update nahi hua."
-        );
-
-        console.error(balanceError);
-
-        return;
-    }
-
-
-
-    // ===============================
-    // CHANGE REQUEST STATUS
-    // ===============================
-
-    const { error: statusError } =
-
-        await supabaseClient
-
-        .from("deposit_requests")
-
-        .update({
-            status: "approved"
-        })
-
-        .eq("id", depositId);
-
-
-    if(statusError){
-
-        alert(
-            "Deposit status update nahi hua."
-        );
-
-        console.error(statusError);
-
-        return;
-    }
-
-
-
-    alert(
-        "Deposit Approved ✅\n\n" +
-        "₹" +
-        depositAmount.toFixed(2) +
-        " wallet me add ho gaya."
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
     );
 
+const userId = localStorage.getItem("user_id");
 
-    // List refresh
+function showError(message){
+    const error = document.getElementById("error");
 
-    loadDeposits();
+    error.innerText = message;
+    error.style.display = "block";
+}
 
+function hideError(){
+    const error = document.getElementById("error");
+
+    error.innerText = "";
+    error.style.display = "none";
+}
+
+function openPaymentPage(){
+
+    hideError();
+
+    const amountInput =
+        document.getElementById("amount");
+
+    const submitBtn =
+        document.getElementById("submitBtn");
+
+    const amount =
+        Number(amountInput.value);
+
+    if(!userId){
+        showError("User login nahi mila.");
+        return;
+    }
+
+    if(!amount || amount < 100){
+        showError("Minimum deposit ₹100 hai.");
+        return;
+    }
+
+    if(!Number.isInteger(amount)){
+        showError("Amount whole number me enter karein.");
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Opening...";
+
+    window.location.href =
+        "deposit-payment.html?amount=" +
+        encodeURIComponent(amount);
 }
 
 
+async function loadHistory(){
 
-// ===============================
-// CANCEL DEPOSIT
-// ===============================
+    const history =
+        document.getElementById("history");
 
-async function cancelDeposit(depositId){
+    if(!userId){
 
-    const confirmCancel =
-        confirm(
-            "Is deposit request ko cancel karna hai?"
-        );
-
-
-    if(!confirmCancel){
-
-        return;
-
-    }
-
-
-    // Current status check
-
-    const { data: request, error: requestError } =
-
-        await supabaseClient
-
-        .from("deposit_requests")
-
-        .select("status")
-
-        .eq("id", depositId)
-
-        .single();
-
-
-    if(requestError){
-
-        alert(
-            "Request check nahi ho payi."
-        );
-
-        console.error(requestError);
+        history.innerHTML =
+            '<div class="empty">User login nahi mila.</div>';
 
         return;
     }
 
+    try{
 
-    if(request.status === "approved"){
+        const { data, error } =
+            await supabaseClient
+            .from("deposit_requests")
+            .select(
+                "id,amount,utr,status,created_at,updated_at"
+            )
+            .eq("user_id", userId)
+            .order("created_at", {
+                ascending:false
+            });
 
-        alert(
-            "Ye deposit already approved hai."
-        );
+        if(error){
+            console.error(error);
 
-        loadDeposits();
+            history.innerHTML =
+                '<div class="empty">History load nahi ho saki.</div>';
 
-        return;
+            return;
+        }
+
+        if(!data || data.length === 0){
+
+            history.innerHTML =
+                '<div class="empty">No deposit history.</div>';
+
+            return;
+        }
+
+        history.innerHTML = data.map(item => {
+
+            const amount =
+                Number(item.amount || 0);
+
+            const status =
+                String(item.status || "pending")
+                .toLowerCase();
+
+            const date =
+                item.created_at
+                ? new Date(item.created_at).toLocaleString("en-IN")
+                : "";
+
+            const utr =
+                item.utr
+                ? item.utr
+                : "Not submitted";
+
+            return `
+                <div class="item">
+
+                    <div class="row">
+                        <span>Amount</span>
+                        <span class="amount">
+                            ₹${amount}
+                        </span>
+                    </div>
+
+                    <div class="row">
+                        <span>Status</span>
+                        <span class="status ${status}">
+                            ${status.toUpperCase()}
+                        </span>
+                    </div>
+
+                    <div class="row">
+                        <span>User ID</span>
+                        <span>${escapeHtml(utr)}</span>
+                    </div>
+
+                    <div class="row">
+                        <span>Date</span>
+                        <span>${date}</span>
+                    </div>
+
+                </div>
+            `;
+
+        }).join("");
+
+    }catch(err){
+
+        console.error(err);
+
+        history.innerHTML =
+            '<div class="empty">History load nahi ho saki.</div>';
     }
-
-
-    if(request.status === "cancelled"){
-
-        alert(
-            "Ye deposit already cancelled hai."
-        );
-
-        loadDeposits();
-
-        return;
-    }
-
-
-
-    // Sirf status cancelled hoga
-    // Wallet me kuch add nahi hoga
-
-    const { error } =
-
-        await supabaseClient
-
-        .from("deposit_requests")
-
-        .update({
-            status: "cancelled"
-        })
-
-        .eq("id", depositId);
-
-
-    if(error){
-
-        alert(
-            "Deposit cancel nahi hua."
-        );
-
-        console.error(error);
-
-        return;
-    }
-
-
-    alert(
-        "Deposit Cancelled ❌"
-    );
-
-
-    loadDeposits();
-
 }
 
 
+function escapeHtml(value){
 
-// ===============================
-// PAGE OPEN HOTE HI LOAD
-// ===============================
+    return String(value)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+}
 
-loadDeposits();
 
+loadHistory();
+
+setInterval(loadHistory,5000);
 </script>
 
 </body>
 </html>
-```

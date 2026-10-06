@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="hi">
 
@@ -359,170 +358,25 @@ function hideError(){
 
 
 /*
- * QR page open hone ke baad
- * request create/check hogi.
+ * QR/payment page open hone ke baad
+ * deposit request check/create hogi.
  */
 
 async function loadRequest(){
 
-  if(!userId){
+  try{
 
-    showError(
-      "User login nahi mila."
-    );
+    hideError();
 
-    document.getElementById(
-      "loading"
-    ).style.display =
-    "none";
-
-    return;
-
-  }
-
-
-  if(!amountFromPage || amountFromPage <= 0){
-
-    showError(
-      "Amount nahi mila."
-    );
-
-    document.getElementById(
-      "loading"
-    ).style.display =
-    "none";
-
-    return;
-
-  }
-
-
-  /*
-   * Pichhle 5 minute ka time.
-   */
-
-  const fiveMinutesAgo =
-    new Date(
-      Date.now() - 5 * 60 * 1000
-    ).toISOString();
-
-
-  /*
-   * Same user + same amount +
-   * pending request check.
-   */
-
-  const {
-    data: existingRequest,
-    error: existingError
-  } = await supabaseClient
-
-    .from("deposit_requests")
-
-    .select(
-      "id,user_id,amount,status,utr,created_at"
-    )
-
-    .eq(
-      "user_id",
-      userId
-    )
-
-    .eq(
-      "amount",
-      amountFromPage
-    )
-
-    .eq(
-      "status",
-      "pending"
-    )
-
-    .gte(
-      "created_at",
-      fiveMinutesAgo
-    )
-
-    .order(
-      "created_at",
-      {
-        ascending:false
-      }
-    )
-
-    .limit(1);
-
-
-  if(existingError){
-
-    console.error(existingError);
-
-    showError(
-      "Request check nahi ho saki."
-    );
-
-    document.getElementById(
-      "loading"
-    ).style.display =
-    "none";
-
-    return;
-
-  }
-
-
-  /*
-   * Agar pichhle 5 minute me
-   * same pending request hai,
-   * wahi request use hogi.
-   */
-
-  if(
-    existingRequest &&
-    existingRequest.length > 0
-  ){
-
-    currentRequest =
-      existingRequest[0];
-
-  }
-
-  else{
 
     /*
-     * New request create.
+     * User login check
      */
 
-    const {
-      data,
-      error
-    } = await supabaseClient
-
-      .from("deposit_requests")
-
-      .insert({
-
-        user_id:userId,
-
-        amount:amountFromPage,
-
-        status:"pending"
-
-      })
-
-      .select(
-        "id,user_id,amount,status,utr,created_at"
-      )
-
-      .single();
-
-
-    if(error || !data){
-
-      console.error(error);
+    if(!userId){
 
       showError(
-        "Deposit request create nahi hui."
+        "User login nahi mila."
       );
 
       document.getElementById(
@@ -535,101 +389,394 @@ async function loadRequest(){
     }
 
 
-    currentRequest =
-      data;
+    /*
+     * Amount check
+     */
 
-  }
+    if(!amountFromPage || amountFromPage <= 0){
+
+      showError(
+        "Amount nahi mila."
+      );
+
+      document.getElementById(
+        "loading"
+      ).style.display =
+      "none";
+
+      return;
+
+    }
 
 
-  /*
-   * Agar kisi reason se request pending nahi hai,
-   * payment page continue nahi karega.
-   */
+    /*
+     * Pichhle 5 minute ka time
+     */
 
-  if(
-    currentRequest.status !==
-    "pending"
-  ){
+    const fiveMinutesAgo =
+      new Date(
+        Date.now() - 5 * 60 * 1000
+      ).toISOString();
 
-    showError(
-      "Ye deposit request active nahi hai."
+
+    /*
+     * Same user + same amount +
+     * pending request check
+     */
+
+    const {
+      data: existingRequest,
+      error: existingError
+    } = await supabaseClient
+
+      .from("deposit_requests")
+
+      .select(
+        "id,user_id,amount,status,utr,created_at"
+      )
+
+      .eq(
+        "user_id",
+        userId
+      )
+
+      .eq(
+        "amount",
+        amountFromPage
+      )
+
+      .eq(
+        "status",
+        "pending"
+      )
+
+      .gte(
+        "created_at",
+        fiveMinutesAgo
+      )
+
+      .order(
+        "created_at",
+        {
+          ascending:false
+        }
+      )
+
+      .limit(1);
+
+
+    /*
+     * Existing request query error
+     */
+
+    if(existingError){
+
+      console.error(
+        "Existing request error:",
+        existingError
+      );
+
+      showError(
+        "Request check nahi ho saki: " +
+        existingError.message
+      );
+
+      document.getElementById(
+        "loading"
+      ).style.display =
+      "none";
+
+      return;
+
+    }
+
+
+    /*
+     * Agar pichhle 5 minute me
+     * same pending request mil gayi
+     */
+
+    if(
+      existingRequest &&
+      existingRequest.length > 0
+    ){
+
+      currentRequest =
+        existingRequest[0];
+
+    }
+
+
+    /*
+     * Agar existing request nahi hai
+     * to new request create hogi
+     */
+
+    else{
+
+      const {
+        data,
+        error
+      } = await supabaseClient
+
+        .from("deposit_requests")
+
+        .insert({
+
+          user_id:userId,
+
+          amount:amountFromPage,
+
+          status:"pending"
+
+        })
+
+        .select(
+          "id,user_id,amount,status,utr,created_at"
+        )
+
+        .single();
+
+
+      /*
+       * Insert error
+       */
+
+      if(error || !data){
+
+        console.error(
+          "Deposit insert error:",
+          error
+        );
+
+        showError(
+          "Deposit request create nahi hui: " +
+          (error?.message || "Unknown error")
+        );
+
+        document.getElementById(
+          "loading"
+        ).style.display =
+        "none";
+
+        return;
+
+      }
+
+
+      currentRequest =
+        data;
+
+    }
+
+
+    /*
+     * Request pending honi chahiye
+     */
+
+    if(
+      !currentRequest ||
+      currentRequest.status !==
+      "pending"
+    ){
+
+      showError(
+        "Ye deposit request active nahi hai."
+      );
+
+      document.getElementById(
+        "loading"
+      ).style.display =
+      "none";
+
+      return;
+
+    }
+
+
+    /*
+     * Amount
+     */
+
+    const amount =
+      Number(
+        currentRequest.amount
+      );
+
+
+    document.getElementById(
+      "amount"
+    ).innerText =
+      "₹" +
+      amount.toFixed(2);
+
+
+    /*
+     * UPI ID
+     */
+
+    const upiId =
+      "7KW0568000@mairtel";
+
+
+    /*
+     * UPI payment data
+     */
+
+    const upiData =
+      "upi://pay" +
+      "?pa=" +
+      encodeURIComponent(upiId) +
+      "&am=" +
+      encodeURIComponent(
+        amount.toFixed(2)
+      ) +
+      "&cu=INR";
+
+
+    console.log(
+      "QR STEP REACHED"
     );
+
+    console.log(
+      "UPI DATA:",
+      upiData
+    );
+
+    console.log(
+      "QRCode:",
+      typeof QRCode
+    );
+
+
+    /*
+     * QR library check
+     */
+
+    if(
+      typeof QRCode ===
+      "undefined"
+    ){
+
+      showError(
+        "QR Code library load nahi hui. Internet connection check karein."
+      );
+
+      document.getElementById(
+        "loading"
+      ).style.display =
+      "none";
+
+      return;
+
+    }
+
+
+    /*
+     * QR container
+     */
+
+    const qrBox =
+      document.getElementById(
+        "qrcode"
+      );
+
+
+    if(!qrBox){
+
+      showError(
+        "QR container nahi mila."
+      );
+
+      document.getElementById(
+        "loading"
+      ).style.display =
+      "none";
+
+      return;
+
+    }
+
+
+    /*
+     * Purana QR clear
+     */
+
+    qrBox.innerHTML =
+      "";
+
+
+    /*
+     * QR generate
+     */
+
+    new QRCode(
+      qrBox,
+      {
+        text:upiData,
+
+        width:240,
+
+        height:240,
+
+        correctLevel:
+          QRCode.CorrectLevel.M
+      }
+    );
+
+
+    /*
+     * Loading hide
+     */
 
     document.getElementById(
       "loading"
     ).style.display =
     "none";
 
-    return;
+
+    /*
+     * Payment content show
+     */
+
+    document.getElementById(
+      "paymentContent"
+    ).style.display =
+    "block";
+
+
+    console.log(
+      "QR CODE GENERATED SUCCESSFULLY"
+    );
 
   }
 
+  catch(error){
 
-  const amount =
-  Number(
-    currentRequest.amount
-  );
-
-
-  document.getElementById(
-    "amount"
-  ).innerText =
-    "₹" +
-    amount.toFixed(2);
+    console.error(
+      "Payment page error:",
+      error
+    );
 
 
-  const upiId =
-    "7KW0568000@mairtel";
+    showError(
+      "Payment page me error aa gaya: " +
+      (error?.message || error)
+    );
 
 
-  const upiData =
-    "upi://pay" +
-    "?pa=" +
-    encodeURIComponent(upiId) +
-    "&am=" +
-    encodeURIComponent(
-      amount.toFixed(2)
-    ) +
-    "&cu=INR";
+    document.getElementById(
+      "loading"
+    ).style.display =
+    "none";
 
-
- console.log("QR STEP REACHED");
-console.log("UPI DATA:", upiData);
-console.log("QRCode:", typeof QRCode);
-
-
-  new QRCode(
-    qrBox,
-    {
-      text:upiData,
-      width:240,
-      height:240,
-      correctLevel:
-        QRCode.CorrectLevel.M
-    }
-  );
-
-
-  /*
-   * Loading hide.
-   */
-
-  document.getElementById(
-    "loading"
-  ).style.display =
-  "none";
-
-
-  document.getElementById(
-    "paymentContent"
-  ).style.display =
-  "block";
+  }
 
 }
 
 
 /*
- * User ID submit.
+ * User ID submit
  */
 
 async function submitUTR(){
@@ -638,26 +785,28 @@ async function submitUTR(){
 
 
   const utrInput =
-  document.getElementById(
-    "utr"
-  );
+    document.getElementById(
+      "utr"
+    );
 
 
   const submitBtn =
-  document.getElementById(
-    "submitBtn"
-  );
+    document.getElementById(
+      "submitBtn"
+    );
 
 
   /*
-   * User kuch bhi dale
-   * ya blank chhode,
-   * submit allowed hai.
+   * User ID
    */
 
   const utr =
-  utrInput.value;
+    utrInput.value.trim();
 
+
+  /*
+   * Request check
+   */
 
   if(!currentRequest){
 
@@ -671,14 +820,15 @@ async function submitUTR(){
 
 
   submitBtn.disabled =
-  true;
+    true;
+
 
   submitBtn.innerText =
-  "Submitting...";
+    "Submitting...";
 
 
   /*
-   * Isi request ki ID par update.
+   * Deposit request update
    */
 
   const {
@@ -689,10 +839,7 @@ async function submitUTR(){
 
     .update({
 
-      utr:utr,
-
-      updated_at:
-        new Date().toISOString()
+      utr:utr
 
     })
 
@@ -707,19 +854,27 @@ async function submitUTR(){
     );
 
 
+  /*
+   * Update error
+   */
+
   if(error){
 
-    console.error(error);
+    console.error(
+      "UTR update error:",
+      error
+    );
 
     showError(
-      "User ID submit nahi hua."
+      "User ID submit nahi hua: " +
+      error.message
     );
 
     submitBtn.disabled =
-    false;
+      false;
 
     submitBtn.innerText =
-    "Submit User ID";
+      "Submit User ID";
 
     return;
 
@@ -727,7 +882,7 @@ async function submitUTR(){
 
 
   /*
-   * Deposit page par wapas.
+   * Deposit page par wapas
    */
 
   window.location.replace(
@@ -737,6 +892,10 @@ async function submitUTR(){
 }
 
 
+/*
+ * Page load
+ */
+
 loadRequest();
 
 </script>
@@ -744,4 +903,3 @@ loadRequest();
 </body>
 
 </html>
-
